@@ -4,6 +4,8 @@
 
 *From Threat to Broadcast in Minutes. We are not just a video generator; we are an AI-powered threat intelligence pipeline that reverse-engineers the psychology of a scam and weaponizes that data into rapid-response public defense campaigns.*
 
+Link to Presentation Slide: https://drive.google.com/file/d/1EvbhQh4IoSBSC0con3r7kx2q1MLkhslZ/view?usp=sharing 
+
 ## The Problem
 
 Scam cases in Malaysia are increasing rapidly. In 2025, Malaysians lost RM542 million to scams, but only RM34 million was recovered, putting seniors, retirees, and students at high risk. The core issues driving this crisis include:
