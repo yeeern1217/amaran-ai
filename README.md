@@ -215,17 +215,19 @@ uvicorn app.api.main:app --reload --port 8000
 
 ## Challenges Faced
 
-**The Challenge: Visual Consistency & Temporal Coherence in Video Generation** Generating multiple 8-second video clips independently with Veo 3.1 resulted in visual drift. Characters suffered from inconsistent facial features, clothing, and body proportions from scene to scene, destroying the narrative coherence of the final public defense campaign.
+### Visual Consistency & Quality Control Across Independent Video Clips
 
-**Investigation & Iteration:** We initially attempted to enforce consistency by injecting highly detailed, text-only character descriptions into each Veo prompt. However, text alone lacked the spatial precision needed for continuity. We then experimented with passing a single reference image per character, but Veo's standard generation mode struggled to maintain strict fidelity without more heavily structured input constraints.
+**The Challenge:** When generating multiple 8-second video clips independently with Veo 3.1, we encountered significant visual drift and inconsistent video quality. Characters shifted in appearance between scenes, and the overall output lacked the visual coherence required for a unified, professional awareness campaign.
 
-**The Architectural Solution:** We abandoned text-to-video prompting in favor of a multi-stage, image-to-image chained reference pipeline:
-* **Semantic Grounding:** Gemini 3 Flash extracts precise character descriptions directly from the approved script.
-* **Visual Anchors:** Nano Banana 2 generates a 2×2 character reference grid for each role, mathematically locking in a canonical appearance.
-* **Storyboard Bounding:** These reference grids are used as strict visual anchors to generate specific static *Start* and *End* keyframes for every scene.
-* **Interpolation Rendering:** Veo 3.1 is then fed these Start and End keyframes alongside the script prompt. By operating Veo in *interpolation mode*, it effectively "fills in" the fluid motion between two visually verified boundaries.
+**Investigation & Debugging:** We initially attempted to enforce consistency by refining the text prompts passed to Veo, injecting highly detailed scene descriptions and character attributes. While this yielded slight improvements, it remained unreliable. We then experimented with generating standalone reference images for characters, but passing them merely as general visual context failed to sufficiently anchor the model's output across different clips.
 
-**The Result:** This chained approach successfully forced character consistency without requiring expensive fine-tuning or custom model training. The critical engineering pivot was relying on bounding image-to-image anchors rather than open-ended text prompting to control video output.
+**The Architectural Solution:** We discovered that supplying Veo 3.1 with explicit, hard-coded *start* and *end* frame images drastically improved both generation quality and temporal consistency. To achieve this, we engineered a multi-stage chained reference pipeline:
+* **Semantic Grounding:** Gemini 3 Flash extracts precise, detailed character descriptions directly from the approved script.
+* **Visual Canonicalization:** Nano Banana generates a 2×2 character reference grid for each role, locking in a consistent, canonical appearance.
+* **Storyboard Bounding:** These verified character references are then used to generate distinct, static *Start* and *End* keyframes for every individual scene.
+* **Interpolation Rendering:** Veo 3.1 receives these Start and End frames alongside the scene script, operating in *interpolation mode* to strictly generate fluid motion between these two visually anchored boundaries.
+
+**The Result:** By constraining Veo with concrete visual boundaries rather than relying on open-ended text prompting, the generated clips achieved significantly higher quality and strict narrative coherence. The critical technical pivot was adopting frame-to-frame anchoring over text-only prompting to enforce visual continuity.
 
 ## Future Scalability Roadmap (2026 - 2029+)
 
