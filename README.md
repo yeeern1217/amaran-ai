@@ -215,7 +215,7 @@ uvicorn app.api.main:app --reload --port 8000
 
 ## Challenges Faced
 
-**The Challenge:Visual Consistency & Temporal Coherence in Video Generation** Generating multiple 8-second video clips independently with Veo 3.1 resulted in visual drift. Characters suffered from inconsistent facial features, clothing, and body proportions from scene to scene, destroying the narrative coherence of the final public defense campaign.
+**The Challenge: Visual Consistency & Temporal Coherence in Video Generation** Generating multiple 8-second video clips independently with Veo 3.1 resulted in visual drift. Characters suffered from inconsistent facial features, clothing, and body proportions from scene to scene, destroying the narrative coherence of the final public defense campaign.
 
 **Investigation & Iteration:** We initially attempted to enforce consistency by injecting highly detailed, text-only character descriptions into each Veo prompt. However, text alone lacked the spatial precision needed for continuity. We then experimented with passing a single reference image per character, but Veo's standard generation mode struggled to maintain strict fidelity without more heavily structured input constraints.
 
