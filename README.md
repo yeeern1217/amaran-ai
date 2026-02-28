@@ -45,8 +45,8 @@ Multi-agent system for generating anti-scam awareness video content for Malaysia
 │  ┌────────────┐                                                             │
 │  │ ScamReport │ ──┐                                                         │
 │  └────────────┘   │   ┌──────────┐   ┌───────────┐   ┌─────────────────┐   │
-│                   ├──▶│ Research │──▶│ Director  │──▶│  Sensitivity    │   │
-│  ┌────────────┐   │   │  Agent   │   │   Agent   │   │    Check        │   │
+│                   ├──▶│ Research │──▶│ Director  │──▶│   Linguistic    │   │
+│  ┌────────────┐   │   │  Agent   │   │   Agent   │   │     Agent       │   │
 │  │CreatorConf │ ──┘   └──────────┘   └───────────┘   └────────┬────────┘   │
 │  └────────────┘                                               │             │
 │                                                               ▼             │
@@ -57,8 +57,8 @@ Multi-agent system for generating anti-scam awareness video content for Malaysia
 │                                                               │             │
 │                                                               ▼             │
 │                                                      ┌─────────────────┐    │
-│                                                      │   Linguistic    │    │
-│                                                      │     Agent       │    │
+│                                                      │  Sensitivity    │    │
+│                                                      │    Check        │    │
 │                                                      └────────┬────────┘    │
 │                                                               │             │
 │                                                               ▼             │
@@ -74,9 +74,9 @@ Multi-agent system for generating anti-scam awareness video content for Malaysia
 |-------|-------|----------------|
 | 1 | **Research Agent** | Analyze scam report, generate verified fact sheet with sources |
 | 2 | **Director Agent** | Script direction, scene structuring, visual storytelling |
-| 3 | **Sensitivity Check** | 3R compliance (Race, Religion, Royalty), MCMC guidelines review |
+| 3 | **Linguistic Agent** | Translation and cultural adaptation (BM, EN, ZH, TA) |
 | 4 | **Visual/Audio Agent** | Video generation prompts, character reference images, clip rendering |
-| 5 | **Linguistic Agent** | Translation and cultural adaptation (BM, EN, ZH, TA) |
+| 5 | **Sensitivity Check** | 3R compliance (Race, Religion, Royalty), MCMC guidelines review |
 | 6 | **Social Officer** | Caption, hashtags, thumbnail, posting schedule |
 
 ## Workflow Steps
@@ -181,7 +181,13 @@ Create a `.env` file in `backend/`:
 
 ```env
 GOOGLE_API_KEY=your_google_api_key_here
+SERPER_API_KEY=your_serper_api_key_here
 ```
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GOOGLE_API_KEY` | Yes | Google API key with Gemini access |
+| `SERPER_API_KEY` | Yes | [Serper](https://serper.dev) API key (a Google Search API) — 
 
 Start the server:
 
