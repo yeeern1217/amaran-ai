@@ -32,138 +32,8 @@ amaran.ai is a multi-agent orchestration platform designed for law enforcement a
 - **SDG 16 (Peace, Justice and Strong Institutions - Target 16.4)** — Equipping relevant national institutions (PDRM, NSRC) with the rapid-response AI infrastructure needed to prevent violence, combat crime, and preemptively intercept illicit financial flows.
 - **SDG 10 (Reduced Inequalities - Target 10.2)** — Closing the digital awareness gap by empowering and promoting the social inclusion of all. amaran.ai ensures every Malaysian is informed regardless of language by autonomously deploying visual safety countermeasures in localized dialects.
 
-## Technical Architecture
 
-Our architecture is designed to orchestrate complex, multi-modal generative tasks while maintaining a lightweight, serverless infrastructure.
-
-### 1. High-Level System Design
-The application follows a decoupled client-server architecture, utilizing Google Cloud serverless components to handle long-running AI generation tasks.
-
-```text
-┌───────────────────────────────────────────────────────────────┐
-│                        DEPLOYMENT                             │
-│                                                               │
-│   Firebase Hosting           Cloud Run                        │
-│   ┌─────────────┐          ┌──────────────────┐               │
-│   │  Next.js    │  ──API──▶│  FastAPI Backend │               │
-│   │  Frontend   │          │  (Python 3.11)   │               │
-│   │  (Static)   │          │                  │               │
-│   └─────────────┘          └──────┬───────────┘               │
-│                                   │                           │
-│                                   ▼                           │
-│                            Google Gemini API                  │
-│                            (Multi-agent pipeline)             │
-└───────────────────────────────────────────────────────────────┘
-```
-
-- **Frontend** — Next.js app exported as static HTML, hosted on Firebase Hosting
-- **Backend** — FastAPI server running on Cloud Run, orchestrating the Gemini-powered agent pipeline
-
-### 2. AI Technologies
-
-| Technology | Usage |
-|------------|-------|
-| **Gemini 3.1 Pro** | The core reasoning engine powering the agent pipeline: script direction, translation, sensitivity review, and social copy. |
-| **Deep Research** | Autonomous multi-step web research. The Research Agent synthesizes threat intelligence to extract facts, decode manipulation tactics, and formulate the behavioral Counter-Hack Strategy. |
-| **Nano Banana** | Visual storyboarding and localized character profile generation. Produces reference grids for each character to ensure visual consistency across scenes. |
-| **Veo** | High-fidelity video clip generation. Renders each storyboard scene into an automated video clip based on structured visual prompts and character references. |
-
-
-### 3. Multi-Agent Pipeline
-
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           SCAM SHIELD PIPELINE                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  INPUT                         AGENTS                             OUTPUT    │
-│                                                                             │
-│  ┌────────────┐                                                             │
-│  │ ScamReport │ ──┐                                                         │
-│  └────────────┘   │   ┌──────────┐   ┌───────────┐   ┌─────────────────┐    │
-│                   ├──▶│ Research │──▶│ Director  │──▶│   Linguistic    │    │
-│  ┌────────────┐   │   │  Agent   │   │   Agent   │   │     Agent       │    │
-│  │CreatorConf │ ──┘   └──────────┘   └───────────┘   └────────┬────────┘    │
-│  └────────────┘                                               │             │
-│                                                               ▼             │
-│                                                      ┌─────────────────┐    │
-│                                                      │  Visual/Audio   │    │
-│                                                      │    Agent        │    │
-│                                                      └────────┬────────┘    │
-│                                                               │             │
-│                                                               ▼             │
-│                                                      ┌─────────────────┐    │
-│                                                      │  Sensitivity    │    │
-│                                                      │    Check        │    │
-│                                                      └────────┬────────┘    │
-│                                                               │             │
-│                                                               ▼             │
-│                                                      ┌─────────────────┐    │
-│                                                      │ Social Officer  │──▶ PUBLISH
-│                                                      │ (caption, tags) │    │
-│                                                      └─────────────────┘    │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-| Order | Agent | Responsibility |
-|-------|-------|----------------|
-| 1 | **Research Agent** | Conducts deep research on scams to extract facts and decode the scammers' manipulation tactics. Generates verified fact sheet with sources. |
-| 2 | **Director Agent** | Turns scam incidents analysis into clear storylines with engaging scenes and characters, specialized for targeted local demographics. |
-| 3 | **Linguistic Agent** | Translation and cultural adaptation (BM, EN, ZH, TA). |
-| 4 | **Visual/Audio Agent** | Video generation prompts, character reference images, clip rendering, and background scoring. |
-| 5 | **Sensitivity Check** | Screens content for 3R compliance (Race, Religion, Royalty) and MCMC guidelines review prior to production. |
-| 6 | **Social Officer** | Packages the final video with platform-optimized strategies, hashtags, captions, and thumbnail ready for immediate viral deployment. |
-
-## Implementation
-### 1. Application Workflow
-
-The UI guides officers through an 8-step workflow:
-
-1. **The Briefing** — Submit scam intel (or use live Serper API fetch). The Research Agent generates a fact sheet; the officer verifies each field via the Human-in-the-Loop chat.
-2. **Configuration** — Select target audience, language(s), tone, and video format.
-3. **The Studio** — AI generates the video script. The Sensitivity Agent reviews for 3R compliance. Officer approves via chat.
-4. **Characters** — AI recommends roles. Officer refines AI-generated character reference images (via Nano Banana).
-5. **Preview** — Nano Banana generates storyboard scene frames using the verified characters. Officer refines via chat.
-6. **Clips Review** — Veo renders the storyboard into high-fidelity video clips for each scene.
-7. **Screening Room** — Individual clips are compiled. Full assembled video playback with multi-language subtitle/caption support.
-8. **Social** — AI-generated social media captions, hashtags, and posting recommendations based on the selected platform.
-
-### 2. Project Structure
-
-```text
-scam-shield/
-├── firebase.json              # Firebase Hosting config
-├── frontend/                  # Next.js (static export → Firebase Hosting)
-│   ├── app/                   # Next.js app router
-│   ├── components/            # Page components + shadcn/ui
-│   ├── hooks/                 # Custom React hooks
-│   └── lib/
-│       ├── app-context.tsx    # Global state management
-│       ├── api/               # API client (backend communication)
-│       └── utils.ts
-│
-└── backend/                   # FastAPI (Docker → Cloud Run)
-    ├── Dockerfile             # Cloud Run container config
-    ├── requirements.txt
-    └── app/
-        ├── config.py          # Settings & environment
-        ├── pipeline.py        # Pipeline orchestrator
-        ├── agents/            # Gemini-powered agents
-        │   ├── research_agent.py
-        │   ├── director_agent.py
-        │   ├── linguistic_agent.py
-        │   ├── visual_audio_agent.py
-        │   ├── sensitivity_agent.py
-        │   └── social_agent.py
-        ├── api/
-        │   ├── main.py        # FastAPI application
-        │   └── routes.py      # REST endpoints
-        └── models/
-            └── schemas.py     # Pydantic models & types
-```
-
-### 3. Local Development
+### Local Development
 
 #### Prerequisites
 
@@ -215,21 +85,118 @@ uvicorn app.api.main:app --reload --port 8000
 ```
 
 
+## Technical Architecture
+
+Our architecture is designed to orchestrate complex, multi-modal generative tasks while maintaining a lightweight, serverless infrastructure.
+
+### 1. High-Level System Design
+The application follows a decoupled client-server architecture, utilizing Google Cloud serverless components to handle long-running AI generation tasks.
+
+```text
+┌───────────────────────────────────────────────────────────────┐
+│                        DEPLOYMENT                             │
+│                                                               │
+│   Firebase Hosting           Cloud Run                        │
+│   ┌─────────────┐          ┌──────────────────┐               │
+│   │  Next.js    │  ──API──▶│  FastAPI Backend │               │
+│   │  Frontend   │          │  (Python 3.11)   │               │
+│   │  (Static)   │          │                  │               │
+│   └─────────────┘          └──────┬───────────┘               │
+│                                   │                           │
+│                                   ▼                           │
+│                            Google Gemini API                  │
+│                            (Multi-agent pipeline)             │
+└───────────────────────────────────────────────────────────────┘
+```
+
+- **Frontend** — Next.js app exported as static HTML, hosted on Firebase Hosting
+- **Backend** — FastAPI server running on Cloud Run, orchestrating the Gemini-powered agent pipeline
+
+### 2. Project Structure
+
+```text
+scam-shield/
+├── firebase.json              # Firebase Hosting config
+├── frontend/                  # Next.js (static export → Firebase Hosting)
+│   ├── app/                   # Next.js app router
+│   ├── components/            # Page components + shadcn/ui
+│   ├── hooks/                 # Custom React hooks
+│   └── lib/
+│       ├── app-context.tsx    # Global state management
+│       ├── api/               # API client (backend communication)
+│       └── utils.ts
+│
+└── backend/                   # FastAPI (Docker → Cloud Run)
+    ├── Dockerfile             # Cloud Run container config
+    ├── requirements.txt
+    └── app/
+        ├── config.py          # Settings & environment
+        ├── pipeline.py        # Pipeline orchestrator
+        ├── agents/            # Gemini-powered agents
+        │   ├── research_agent.py
+        │   ├── director_agent.py
+        │   ├── linguistic_agent.py
+        │   ├── visual_audio_agent.py
+        │   ├── sensitivity_agent.py
+        │   └── social_agent.py
+        ├── api/
+        │   ├── main.py        # FastAPI application
+        │   └── routes.py      # REST endpoints
+        └── models/
+            └── schemas.py     # Pydantic models & types
+```
+
+### 3. AI Technologies
+
+| Technology | Usage |
+|------------|-------|
+| **Gemini 3.1 Pro** | The core reasoning engine powering the agent pipeline: script direction, translation, sensitivity review, and social copy. |
+| **Deep Research** | Autonomous multi-step web research. The Research Agent synthesizes threat intelligence to extract facts, decode manipulation tactics, and formulate the behavioral Counter-Hack Strategy. |
+| **Nano Banana** | Visual storyboarding and localized character profile generation. Produces reference grids for each character to ensure visual consistency across scenes. |
+| **Veo** | High-fidelity video clip generation. Renders each storyboard scene into an automated video clip based on structured visual prompts and character references. |
+
+
+
+## Implementation Details
+
+This section condenses the visual flow shown in the implementation diagram (Gemini/Gemini Flash, Nano Banana 2, Veo 3.1 Fast) into a concise, non-redundant mapping of pipeline steps and design decisions.
+
+
+- **Inputs:** Scam reports (text, news, social alerts) → fed into Deep Research to extract ancestry, victim demographics, and the psychological exploit.
+- **AI Scriptwriter / Director (Gemini 3.1 Pro):** Writes scene-level scripts, camera motion hints, SFX cues, and produces structured scene prompts for downstream agents.
+- **Character Prompt Generation (Gemini 3 Flash):** Produces detailed character prompts from the script used to seed image generation.
+- **Character Image Generation (Nano Banana 2):** Generates canonical 2×2 character reference grids that establish a consistent visual identity for each role.
+- **Start & End Frame Generation:** Create anchored keyframes from the character references to serve as concrete visual boundaries for each scene.
+- **AI Video Generation (Veo 3.1 Fast):** Consumes start/end frames + scene script and runs in interpolation mode to render 8s clips per scene; clips are merged to produce the final video.
+- **Post-processing & Localization (Gemini 3 Flash):** Translates dialogue, regenerates voiceovers if needed, generates subtitles (SRT), and creates platform-optimized social captions.
+- **Sensitivity Check:** A dedicated agent reviews scripts and final outputs for 3R and regulatory compliance before human approval and publication.
+
+Design notes:
+- Frame-to-frame anchoring (start/end keyframes) is the primary mechanism used to prevent visual identity drift across independently generated clips.
+- Canonical reference grids (Nano Banana) + cached assets improve determinism, reduce cost, and speed up iteration.
+- The pipeline favors chained, idempotent steps with human-in-the-loop checkpoints at script, character, and final screening stages.
+
+
 ## Challenges Faced
 
-### Visual Consistency & Quality Control Across Independent Video Clips
+### 1. Visual Consistency Across Independent Clips
 
-**The Challenge:** When generating multiple 8-second video clips independently with Veo 3.1, we encountered significant visual drift and inconsistent video quality. Characters shifted in appearance between scenes, and the overall output lacked the visual coherence required for a unified, professional awareness campaign.
+**Challenge:** Separately generated 8-second scenes caused visual drift and inconsistent quality.
 
-**Investigation & Debugging:** We initially attempted to enforce consistency by refining the text prompts passed to Veo, injecting highly detailed scene descriptions and character attributes. While this yielded slight improvements, it remained unreliable. We then experimented with generating standalone reference images for characters, but passing them merely as general visual context failed to sufficiently anchor the model's output across different clips.
+**Solution:** We enforced frame-to-frame anchoring using fixed start and end keyframes to ensure coherent, high-quality transitions.
 
-**The Architectural Solution:** We discovered that supplying Veo 3.1 with explicit, hard-coded *start* and *end* frame images drastically improved both generation quality and temporal consistency. To achieve this, we engineered a multi-stage chained reference pipeline:
-* **Semantic Grounding:** Gemini 3 Flash extracts precise, detailed character descriptions directly from the approved script.
-* **Visual Canonicalization:** Nano Banana generates a 2×2 character reference grid for each role, locking in a consistent, canonical appearance.
-* **Storyboard Bounding:** These verified character references are then used to generate distinct, static *Start* and *End* keyframes for every individual scene.
-* **Interpolation Rendering:** Veo 3.1 receives these Start and End frames alongside the scene script, operating in *interpolation mode* to strictly generate fluid motion between these two visually anchored boundaries.
+### 2. Character Identity Drift
 
-**The Result:** By constraining Veo with concrete visual boundaries rather than relying on open-ended text prompting, the generated clips achieved significantly higher quality and strict narrative coherence. The critical technical pivot was adopting frame-to-frame anchoring over text-only prompting to enforce visual continuity.
+**Challenge:** Text prompts alone could not reliably preserve character appearance across scenes.
+
+**Solution:** We introduced canonical visual references to lock in consistent character identity before rendering
+
+### 3. Grounded Research vs Hallucination Risk
+
+**Challenge:**  Open-ended LLM generation risked factual inaccuracies in public awareness content.
+
+**Solution:** We implemented a structured Deep Research grounding layer before script generation to ensure contextual accuracy and reliability.
+
 
 ## Future Scalability Roadmap (2026 - 2029+)
 
