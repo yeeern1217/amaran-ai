@@ -33,15 +33,39 @@ amaran.ai is a multi-agent orchestration platform designed for law enforcement a
 - **SDG 10 (Reduced Inequalities - Target 10.2)** — Closing the digital awareness gap by empowering and promoting the social inclusion of all. amaran.ai ensures every Malaysian is informed regardless of language by autonomously deploying visual safety countermeasures in localized dialects.
 
 
-### Local Development
+## High-Level System Design
+The application follows a decoupled client-server architecture, utilizing Google Cloud serverless components to handle long-running AI generation tasks.
 
-#### Prerequisites
+```text
+┌───────────────────────────────────────────────────────────────┐
+│                        DEPLOYMENT                             │
+│                                                               │
+│   Firebase Hosting           Cloud Run                        │
+│   ┌─────────────┐          ┌──────────────────┐               │
+│   │  Next.js    │  ──API──▶│  FastAPI Backend │               │
+│   │  Frontend   │          │  (Python 3.11)   │               │
+│   │  (Static)   │          │                  │               │
+│   └─────────────┘          └──────┬───────────┘               │
+│                                   │                           │
+│                                   ▼                           │
+│                            Google Gemini API                  │
+│                            (Multi-agent pipeline)             │
+└───────────────────────────────────────────────────────────────┘
+```
+
+- **Frontend** — Next.js app exported as static HTML, hosted on Firebase Hosting
+- **Backend** — FastAPI server running on Cloud Run, orchestrating the Gemini-powered agent pipeline
+
+
+## Local Development
+
+### Prerequisites
 
 - Node.js 18+ and pnpm
 - Python 3.11+
 - A Google API key with Gemini access
 
-#### Frontend
+### Frontend
 
 ```bash
 cd frontend
@@ -51,7 +75,7 @@ pnpm dev
 
 Opens at http://localhost:3000. Set `NEXT_PUBLIC_API_URL` to point to your backend.
 
-#### Backend
+### Backend
 
 ```bash
 cd backend
@@ -89,28 +113,13 @@ uvicorn app.api.main:app --reload --port 8000
 
 Our architecture is designed to orchestrate complex, multi-modal generative tasks while maintaining a lightweight, serverless infrastructure.
 
-### 1. High-Level System Design
-The application follows a decoupled client-server architecture, utilizing Google Cloud serverless components to handle long-running AI generation tasks.
+## 1. Architecture Diagram
 
-```text
-┌───────────────────────────────────────────────────────────────┐
-│                        DEPLOYMENT                             │
-│                                                               │
-│   Firebase Hosting           Cloud Run                        │
-│   ┌─────────────┐          ┌──────────────────┐               │
-│   │  Next.js    │  ──API──▶│  FastAPI Backend │               │
-│   │  Frontend   │          │  (Python 3.11)   │               │
-│   │  (Static)   │          │                  │               │
-│   └─────────────┘          └──────┬───────────┘               │
-│                                   │                           │
-│                                   ▼                           │
-│                            Google Gemini API                  │
-│                            (Multi-agent pipeline)             │
-└───────────────────────────────────────────────────────────────┘
-```
+The diagram below summarizes the technical architecture and deployment flow: frontend technologies, backend stack with Gemini agents, containerization, CI/CD, and infrastructure.
 
-- **Frontend** — Next.js app exported as static HTML, hosted on Firebase Hosting
-- **Backend** — FastAPI server running on Cloud Run, orchestrating the Gemini-powered agent pipeline
+![Technical Architecture](docs/technical-architecture.svg)
+
+Flow summary: Frontend (Next.js/TypeScript/Tailwind/React) ↔ Backend (Python/FastAPI + Gemini agents) → Containerize with Docker → Deploy to Google Cloud Run / Firebase. CI/CD via GitHub Actions.
 
 ### 2. Project Structure
 
