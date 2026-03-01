@@ -115,11 +115,11 @@ Our architecture is designed to orchestrate complex, multi-modal generative task
 
 ## 1. Architecture Diagram
 
-The diagram below summarizes the technical architecture and deployment flow: frontend technologies, backend stack with Gemini agents, containerization, CI/CD, and infrastructure.
+The diagram below summarizes the technical architecture and deployment flow: frontend technologies, backend stack with Gemini agents, containerization, and cloud infrastructure.
 
 ![Technical Architecture](docs/technical-architecture.svg)
 
-Flow summary: Frontend (Next.js/TypeScript/Tailwind/React) ↔ Backend (Python/FastAPI + Gemini agents) → Containerize with Docker → Deploy to Google Cloud Run / Firebase. CI/CD via GitHub Actions.
+Flow summary: Frontend (Next.js / TypeScript / Tailwind / React) ↔ Backend (Python / FastAPI + Gemini agents) → Containerize with Docker → Deploy to Google Cloud Run / Firebase.
 
 ### 2. Project Structure
 
