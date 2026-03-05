@@ -1,4 +1,4 @@
-# amaran.ai
+# amaran.ai 
 
 **AI Scam Intelligence for Multilingual Awareness Videos**
 
