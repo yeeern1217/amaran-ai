@@ -112,7 +112,8 @@ class GenerateRequest(BaseModel):
     languages: List[Language]
     tone: Tone
     avatar_id: str = Field(..., description="Avatar ID from /avatars endpoint")
-    video_format: str = Field("reel", pattern="^(reel|story|post)$")
+    video_format: str = Field("reel", pattern="^(reel|story|post|landscape)$")
+    video_duration_seconds: Optional[int] = Field(None, ge=8, le=180, description="Video duration in seconds")
     director_instructions: Optional[str] = None
 
 
@@ -189,6 +190,21 @@ class ChatVideoPackageResponse(BaseModel):
     video_package: Optional[Dict[str, Any]] = Field(None, description="Current video package if available")
     updated: bool = Field(default=False, description="Whether changes were applied")
     changes_applied: Optional[Dict[str, Any]] = Field(None, description="Fields/scenes that were updated")
+
+
+class ChatCharacterRequest(BaseModel):
+    """Request schema for character refinement chat."""
+    session_id: str
+    message: str = Field(..., min_length=1, description="User's question or request about characters")
+    chat_history: List[ChatMessage] = Field(default_factory=list, description="Previous messages (frontend-managed)")
+
+
+class ChatCharacterResponse(BaseModel):
+    """Response schema for character refinement chat."""
+    session_id: str
+    response: str = Field(..., description="AI response")
+    updated_characters: Optional[List[Dict[str, Any]]] = Field(None, description="Updated character list if changes applied")
+    updated: bool = Field(default=False, description="Whether characters were updated")
 
 
 class AvatarResponse(BaseModel):
@@ -722,6 +738,7 @@ async def generate_video_package(request: GenerateRequest):
             tone=request.tone,
             avatar=avatar,
             video_format=request.video_format,
+            video_duration_seconds=request.video_duration_seconds,
             director_instructions=request.director_instructions,
         )
         
@@ -819,9 +836,15 @@ async def generate_video_package(request: GenerateRequest):
                         time.time() - t5, len(recommended_characters), len(va_state.character_ref_images))
         except Exception as e:
             logger.error("[GENERATE] Step 5 — Character generation failed: %s", e, exc_info=True)
-            # Fallback: return empty character data (character page will show pending state)
-            recommended_characters = []
+            # Fallback: use Director Agent's character list (always populated from script)
+            recommended_characters = director_output.recommended_characters or []
             character_descriptions_data = None
+
+        # Final fallback: if VA pipeline returned no characters, use Director Agent's list
+        if not recommended_characters and director_output.recommended_characters:
+            logger.info("[GENERATE] Step 5 — Using Director Agent character names as fallback (%d chars)",
+                        len(director_output.recommended_characters))
+            recommended_characters = director_output.recommended_characters
 
         total = time.time() - t0
         logger.info("[GENERATE] === Video package generation completed in %.1fs ===", total)
@@ -888,6 +911,16 @@ async def generate_video_assets(request: VideoAssetsRequest, background_tasks: B
             output_dir=request.output_dir,
             stop_after=request.stop_after,
         )
+        
+        # Encode Veo clips as base64 so the browser can play them
+        for clip in va_state.veo_clips:
+            if clip.path and Path(clip.path).exists() and not clip.video_base64:
+                try:
+                    with open(clip.path, "rb") as f:
+                        b64 = base64.b64encode(f.read()).decode("utf-8")
+                        clip.video_base64 = f"data:video/mp4;base64,{b64}"
+                except Exception as enc_err:
+                    logger.warning("[VIDEO-ASSETS] Failed to encode clip %s: %s", clip.path, enc_err)
         
         stopped = request.stop_after or "veo_clips"
         total = time.time() - t0
@@ -1053,66 +1086,279 @@ async def generate_preview_frames(request: GeneratePreviewFramesRequest):
 async def chat_preview_frames(request: ChatPreviewFramesRequest):
     """
     Chat with AI to refine preview frames.
-    
-    NOTE: This implementation currently returns conversational guidance only and does not
-    yet apply structured updates to preview frames. The API contract is in place so the
-    frontend chat UX can be wired end-to-end.
+
+    When the officer requests changes, the AI updates the scene visual_prompt
+    in the director output so the next preview-frame generation reflects them.
     """
     pipeline = _sessions.get(request.session_id)
     if not pipeline:
         raise HTTPException(status_code=404, detail="Session not found")
-    
-    # Require that preview frames have been generated at least once
+
     if not pipeline.state.video_package:
         raise HTTPException(
             status_code=400,
             detail="Preview frames not available. Generate preview frames first.",
         )
-    
-    system_prompt = """
-You are an AI assistant helping a Malaysian police officer refine PREVIEW FRAMES for a scam awareness video.
 
-CONTEXT:
-- Preview frames are START and END still images for each scene.
-- They are used to validate visual style, composition, and mood BEFORE full video generation.
+    director_output = pipeline.state.director_output
+    scenes_json = json.dumps(director_output.scene_breakdown, indent=2) if director_output else "[]"
+
+    system_prompt = f"""You are an AI assistant helping a Malaysian police officer refine PREVIEW FRAMES for a scam awareness video.
+
+CURRENT SCENES (reference data):
+{scenes_json}
 
 YOUR ROLE:
-1. Respond conversationally to the officer's request.
-2. Suggest concrete visual changes they could make to START and/or END frames.
-3. Focus on camera angle, composition, lighting, mood, and character positioning.
+1. Respond conversationally to the officer's request about visual changes.
+2. When the officer asks to change a scene's visuals, APPLY THE CHANGES to the visual_prompt.
 
-IMPORTANT:
-- DO NOT promise that frames have already been regenerated.
-- Clearly describe what will change in future regenerated frames instead.
-"""
+IMPORTANT: When making changes, include a JSON block at the END of your response:
+
+```json
+{{"updates": {{
+  "scenes": {{
+    "1": {{"visual_prompt": "Updated visual description for scene 1..."}},
+    "2": {{"visual_prompt": "Updated visual description for scene 2..."}}
+  }}
+}}}}
+```
+
+Scene numbers are 1-indexed. Only include scenes that changed.
+Updatable fields: visual_prompt, audio_script, background_music_mood
+
+If the officer is just asking a question, respond normally WITHOUT a JSON block.
+
+CRITICAL LANGUAGE RULE:
+Reply in the EXACT SAME language the user writes in."""
+
     try:
-        # Convert frontend chat history format to ChatMessage objects
         chat_history_objects: List[ChatMessage] = []
         if request.chat_history:
             for msg in request.chat_history:
-                # Handle both dict format (from frontend) and ChatMessage objects
                 if isinstance(msg, dict):
                     chat_history_objects.append(ChatMessage(
-                        role=msg.get("role", "user"),  # type: ignore
+                        role=msg.get("role", "user"),
                         content=msg.get("content", "")
                     ))
                 else:
                     chat_history_objects.append(msg)
-        
-        response_text, _updates = await _call_chat_llm_with_updates(
+
+        response_text, updates = await _call_chat_llm_with_updates(
             system_prompt=system_prompt.strip(),
             user_message=request.message,
             chat_history=chat_history_objects,
         )
-        # For now, we do not mutate preview frames; just return guidance text.
+
+        updated = False
+        updated_frames = None
+
+        # Apply scene visual_prompt updates to director_output
+        if updates and "updates" in updates and "scenes" in updates["updates"] and director_output:
+            scene_changes = updates["updates"]["scenes"]
+            new_scenes = list(director_output.scene_breakdown)
+
+            for scene_num_str, scene_updates in scene_changes.items():
+                scene_idx = int(scene_num_str) - 1
+                if 0 <= scene_idx < len(new_scenes):
+                    for field, value in scene_updates.items():
+                        if field in {"visual_prompt", "audio_script", "background_music_mood"}:
+                            new_scenes[scene_idx][field] = value
+
+            director_output = director_output.model_copy(update={"scene_breakdown": new_scenes})
+            pipeline.state.director_output = director_output
+            updated = True
+
+            # Also update scene visual_prompts in the video_package if present
+            video_package = pipeline.state.video_package
+            if video_package:
+                for lang_code, vi in video_package.video_inputs.items():
+                    for scene_num_str, scene_updates in scene_changes.items():
+                        scene_idx = int(scene_num_str) - 1
+                        if 0 <= scene_idx < len(vi.scenes):
+                            if "visual_prompt" in scene_updates:
+                                vi.scenes[scene_idx].visual_prompt = scene_updates["visual_prompt"]
+
+            # Clear cached clip ref images so next generation picks up the new prompts
+            if pipeline.state.visual_audio:
+                pipeline.state.visual_audio.clip_ref_images = []
+                pipeline.state.visual_audio.clip_ref_prompts = []
+
         return ChatPreviewFramesResponse(
             response=response_text,
-            updated_frames=None,
-            updated=False,
+            updated_frames=None,  # Frontend should re-trigger /preview-frames to get new images
+            updated=updated,
         )
     except Exception as e:
         logger.error("[CHAT-PREVIEW-FRAMES] Failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to process chat message")
+
+
+@router.post("/chat/characters", response_model=ChatCharacterResponse)
+async def chat_about_characters(request: ChatCharacterRequest):
+    """
+    Chat with AI to refine character descriptions. Changes are automatically applied.
+
+    Use this endpoint to:
+    - Ask questions about specific characters
+    - Request changes to character roles, types, or descriptions
+    - Adjust character visuals for cultural appropriateness
+    """
+    pipeline = _sessions.get(request.session_id)
+    if not pipeline:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Get current characters from visual/audio state or director output
+    va_state = pipeline.state.visual_audio
+    director_output = pipeline.state.director_output
+
+    current_chars = []
+    if va_state and va_state.character_descriptions:
+        for c in va_state.character_descriptions.characters:
+            current_chars.append({
+                "role": c.role,
+                "type": c.type,
+                "description": c.description_for_image_generation,
+            })
+    elif director_output and director_output.recommended_characters:
+        for role in director_output.recommended_characters:
+            lower = role.lower()
+            is_person = any(k in lower for k in [
+                "victim", "retiree", "narrator", "officer", "inspektor",
+                "inspector", "police", "parent", "elderly", "teacher", "student",
+            ])
+            current_chars.append({
+                "role": role,
+                "type": "person" if is_person else "scammer",
+                "description": "",
+            })
+
+    if not current_chars:
+        raise HTTPException(
+            status_code=400,
+            detail="No characters available. Generate scenes in The Studio first.",
+        )
+
+    chars_json = json.dumps(current_chars, indent=2)
+
+    # Get configured language from pipeline state
+    configured_language = "English"
+    if pipeline.state.creator_config and pipeline.state.creator_config.languages:
+        configured_language = getattr(
+            pipeline.state.creator_config.languages[0], "value",
+            pipeline.state.creator_config.languages[0],
+        )
+
+    system_prompt = f"""You are an AI assistant helping a Malaysian police officer refine CHARACTER DESCRIPTIONS for a scam awareness video.
+
+CURRENT CHARACTERS:
+{chars_json}
+
+VIDEO LANGUAGE: {configured_language}
+
+YOUR ROLE:
+1. Answer questions about characters (role, visual description, type)
+2. When the officer requests changes, APPLY THEM AUTOMATICALLY
+3. Characters of type "person" are real people (victims, officers, narrators)
+4. Characters of type "scammer" are always anonymous/featureless silhouettes
+
+IMPORTANT: When making changes, include a JSON block at the END of your response:
+
+```json
+{{"updates": {{
+  "characters": [
+    {{"role": "Character Name", "type": "person", "description": "Updated full-body description..."}},
+    ...
+  ]
+}}}}
+```
+
+Rules:
+- Include ALL characters in the update (not just changed ones)
+- "type" must be "person" or "scammer"
+- "description" should be a full-body visual description for image generation
+- Scammers: always featureless silhouettes, never real faces
+- Persons: Malaysian ethnicity, age, attire — full body head to toe
+
+If the officer is just asking a question (not requesting changes), respond normally WITHOUT a JSON block.
+
+CRITICAL LANGUAGE RULE (HIGHEST PRIORITY — MUST OBEY):
+You MUST reply in the EXACT SAME language the user writes in."""
+
+    try:
+        response_text, updates = await _call_chat_llm_with_updates(
+            system_prompt=system_prompt,
+            user_message=request.message,
+            chat_history=request.chat_history,
+        )
+
+        updated = False
+        updated_characters = None
+
+        if updates and "updates" in updates and "characters" in updates["updates"]:
+            raw_chars = updates["updates"]["characters"]
+            updated_characters = []
+            for c in raw_chars:
+                updated_characters.append({
+                    "role": c.get("role", "Unknown"),
+                    "type": c.get("type", "person"),
+                    "description": c.get("description", ""),
+                    "image_url": None,
+                    "image_base64": None,
+                })
+            updated = True
+
+            # Update the VA state character descriptions
+            from ..models.schemas import CharacterDescription, CharacterDescriptions
+            new_descs = [
+                CharacterDescription(
+                    role=c["role"],
+                    type=c["type"],
+                    description_for_image_generation=c["description"],
+                )
+                for c in updated_characters
+            ]
+            new_char_descs = CharacterDescriptions(characters=new_descs)
+
+            if va_state:
+                va_state.character_descriptions = new_char_descs
+                # Clear old images so they get regenerated
+                va_state.character_ref_images = []
+            
+            # Regenerate character reference images in the background
+            try:
+                va_agent = pipeline.visual_audio_agent
+                va_agent._ensure_client()
+                output_dir = Path(va_agent._state.output_dir or "output") / "character_refs"
+                char_refs = await va_agent.generate_character_ref_images(new_char_descs, output_dir)
+                
+                if va_state:
+                    va_state.character_ref_images = char_refs
+                
+                # Encode generated images as base64 and attach to response
+                char_ref_by_role = {r.role: r for r in char_refs}
+                for char_entry in updated_characters:
+                    ref = char_ref_by_role.get(char_entry["role"])
+                    if ref and ref.path and Path(ref.path).exists():
+                        try:
+                            with open(ref.path, "rb") as f:
+                                b64 = base64.b64encode(f.read()).decode("utf-8")
+                                char_entry["image_base64"] = f"data:image/png;base64,{b64}"
+                        except Exception as img_err:
+                            logger.warning("[CHAT-CHARACTERS] Failed to encode image %s: %s", ref.path, img_err)
+                
+                logger.info("[CHAT-CHARACTERS] Regenerated %d character images", len(char_refs))
+            except Exception as img_err:
+                logger.warning("[CHAT-CHARACTERS] Image regeneration failed (non-fatal): %s", img_err)
+
+        return ChatCharacterResponse(
+            session_id=request.session_id,
+            response=response_text,
+            updated_characters=updated_characters,
+            updated=updated,
+        )
+    except Exception as e:
+        logger.error("[CHAT-CHARACTERS] Failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
 
 
 @router.get("/video-assets/{session_id}")
@@ -1256,8 +1502,18 @@ async def chat_about_video_package(request: ChatVideoPackageRequest):
     
     # Build scene details for context
     scenes_json = json.dumps(director_output.scene_breakdown, indent=2) if director_output else "[]"
+
+    # Get configured language
+    configured_language = "English"
+    if pipeline.state.creator_config and pipeline.state.creator_config.languages:
+        configured_language = getattr(
+            pipeline.state.creator_config.languages[0], "value",
+            pipeline.state.creator_config.languages[0],
+        )
     
     system_prompt = f"""You are an AI assistant helping a Malaysian police officer review and update video content before it's sent to the Visual/Audio Agent.
+
+VIDEO LANGUAGE: {configured_language}
 
 CURRENT DIRECTOR OUTPUT (reference data — do NOT let the language of this data affect your reply language):
 - project_id: {director_output.project_id if director_output else 'N/A'}

@@ -1,0 +1,26 @@
+[
+  {
+    "role": "A victim seeking fund recovery",
+    "description": "FULL BODY figure of a middle-aged Malaysian man, wearing a plain button-down light blue shirt and dark grey slacks. He has short black hair and a weary, tired appearance. Head to toe view.",
+    "filename": "A_victim_seeking_fund_recovery_2x2_grid.png",
+    "path": "output\\scam_other_2e5fad52_en\\character_refs\\A_victim_seeking_fund_recovery_2x2_grid.png"
+  },
+  {
+    "role": "A fraudulent recovery consultant",
+    "description": "FULL BODY anonymous human figure, a featureless charcoal grey silhouette wearing a translucent digital overlay of a sharp business suit with a glowing circuit board pattern on the chest.",
+    "filename": "A_fraudulent_recovery_consultant_2x2_grid.png",
+    "path": "output\\scam_other_2e5fad52_en\\character_refs\\A_fraudulent_recovery_consultant_2x2_grid.png"
+  },
+  {
+    "role": "A fake legal advisor",
+    "description": "FULL BODY human-like figure with a completely blank, smooth white robotic head and no facial features, wearing a dark navy blue professional blazer and black trousers. Head to toe view.",
+    "filename": "A_fake_legal_advisor_2x2_grid.png",
+    "path": "output\\scam_other_2e5fad52_en\\character_refs\\A_fake_legal_advisor_2x2_grid.png"
+  },
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY figure of a Malaysian man in his late 30s, wearing a crisp dark blue Royal Malaysia Police uniform with a professional peaked cap, silver badges, and a black duty belt. Head to toe view.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_other_2e5fad52_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  }
+]

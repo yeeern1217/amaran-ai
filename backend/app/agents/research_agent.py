@@ -542,7 +542,15 @@ Your final answer MUST contain the JSON object above.
         )
         
         self.logger.info(f"Received grounded response from {self.config.model_name}")
-        return response.text
+        text = response.text
+        if not text:
+            # Fallback: try to extract text from candidates
+            if response.candidates:
+                parts = response.candidates[0].content.parts
+                text = "".join(p.text for p in parts if p.text)
+            if not text:
+                raise ValueError("LLM returned an empty response (possibly blocked or grounding-only)")
+        return text
     
     async def process(self, input_data: IntakeInput, on_thought: Optional[callable] = None) -> AgentResult:
         """

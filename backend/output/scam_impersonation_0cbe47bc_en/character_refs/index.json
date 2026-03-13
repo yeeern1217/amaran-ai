@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Targeted Victim",
+    "description": "FULL BODY. A young Malaysian man in his late 20s, professional urban appearance. He wears a smart casual outfit consisting of a crisp light blue button-down shirt tucked into charcoal grey chinos, with a leather belt and dark loafers. He has short, neatly styled black hair and clean-shaven skin.",
+    "filename": "Targeted_Victim_2x2_grid.png",
+    "path": "output\\scam_impersonation_0cbe47bc_en\\character_refs\\Targeted_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Elderly Parent",
+    "description": "FULL BODY. An elderly Malaysian woman in her 60s. She is wearing a traditional yet modest floral print baju kurung in soft pastel colors with a matching beige headscarf (tudung). She wears simple sandals and has a gentle, maternal appearance with visible age lines.",
+    "filename": "Elderly_Parent_2x2_grid.png",
+    "path": "output\\scam_impersonation_0cbe47bc_en\\character_refs\\Elderly_Parent_2x2_grid.png"
+  },
+  {
+    "role": "AI Voice Scammer",
+    "description": "FULL BODY. A featureless, anonymous human silhouette made of dark matte shadows. The figure has glowing blue digital circuit patterns tracing through its limbs, symbolizing AI technology. It is completely faceless with no identifiable human features.",
+    "filename": "AI_Voice_Scammer_2x2_grid.png",
+    "path": "output\\scam_impersonation_0cbe47bc_en\\character_refs\\AI_Voice_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Fake Authority Figure",
+    "description": "FULL BODY. A middle-aged Malaysian man dressed in a formal, intimidating dark navy police-style uniform with silver buttons and shoulder epaulettes, but no specific department patches. He has a stern expression, short-cropped black hair, and stands tall in polished black boots.",
+    "filename": "Fake_Authority_Figure_2x2_grid.png",
+    "path": "output\\scam_impersonation_0cbe47bc_en\\character_refs\\Fake_Authority_Figure_2x2_grid.png"
+  }
+]

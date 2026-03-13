@@ -104,8 +104,9 @@ Scene guidelines:
         primary_lang = getattr(cc.languages[0], "value", cc.languages[0])
         tone_label = getattr(cc.tone, "value", cc.tone)
         
-        # Calculate number of scenes (each scene max 8 seconds for Veo 3)
-        num_scenes = max(3, video_duration // 8)
+        # Calculate number of scenes: each Veo clip is max 8s; min 2 scenes
+        import math
+        num_scenes = max(2, math.ceil(video_duration / 8))
         
         prompt = f"""Create a video script for an anti-scam awareness campaign.
 
@@ -122,9 +123,17 @@ Scene guidelines:
 - Target Audience: {targets}
 - Tone: {tone_label}
 - Primary Language: {primary_lang}
-- Avatar: {cc.avatar.name} ({cc.avatar.id})
+- Narrator/Host Avatar: {cc.avatar.name} ({cc.avatar.id})
 
 {f"## DIRECTOR INSTRUCTIONS (from officer)" + chr(10) + cc.director_instructions if cc.director_instructions else ""}
+
+## CHARACTER DEFINITION (REQUIRED)
+Before writing scenes, define 3-5 characters specific to **{fs.scam_name}**:
+- Include a LAW ENFORCEMENT NARRATOR named after a relatable Malaysian officer (e.g. "Inspektor Amir") — this is the avatar {cc.avatar.name}.
+- Include the VICTIM role (the person being scammed).
+- Include 1-3 SCAMMER/ANTAGONIST roles relevant to this specific scam type.
+- Give each a concise, descriptive label (e.g. "Inspektor Amir (Law Enforcement Narrator)", "Elderly Victim", "Fake Bank Officer").
+- EVERY character defined MUST appear in at least one scene's visual_prompt or audio_script. Do NOT define characters that are never used.
 
 ## OUTPUT REQUIREMENTS
 
@@ -132,33 +141,40 @@ Generate a JSON response with this structure:
 
 {{
     "project_id": "scam_{category_key}_{input_data.session_id[:8]}",
+    "characters": [
+        "Inspektor Amir (Law Enforcement Narrator)",
+        "[Victim role — e.g. Retiree, Online Shopper]",
+        "[Scammer role 1]",
+        "[Scammer role 2 if needed]"
+    ],
     "master_script": "The complete script in {primary_lang}, written naturally as spoken dialogue",
     "scene_breakdown": [
         {{
             "scene_id": 1,
             "duration_est_seconds": 6,
             "purpose": "HOOK - grab attention immediately",
-            "visual_prompt": "Detailed description of what to show. Use {{primary_avatar_id}} for avatar placement.",
+            "visual_prompt": "Detailed description of what to show. Reference characters by their exact names from the 'characters' list above (e.g. 'Inspektor Amir stands in a dim room...', 'Elderly Victim picks up the phone...'). Do NOT use placeholders like {{{{primary_avatar_id}}}} — always use the character's actual name.",
             "audio_script": "Exact dialogue in {primary_lang}",
             "text_overlay": "SHORT TEXT FOR SCREEN",
             "transition": "cut/fade/swipe",
             "background_music_mood": "tense/urgent/calm/hopeful"
         }},
-        // ... more scenes totaling EXACTLY {video_duration} seconds
+        // ... TOTAL MUST BE EXACTLY {num_scenes} scenes summing to {video_duration} seconds
     ],
     "creative_notes": "Director notes on overall vision, pacing, visual style"
 }}
 
-## SCENE STRUCTURE GUIDE (for {video_duration}s video)
-1. HOOK (Scene 1, ~6s): Grab attention - shock, question, or relatable situation
-2. PROBLEM (Scene 2, ~8s): Show the scam scenario - what happens to victims
-3. RED FLAG (Scene 3, ~8s): Highlight the warning sign - what to look for  
-4. SOLUTION (Scene 4, ~8s): Clear action steps + helpline
+## SCENE STRUCTURE GUIDE (for {video_duration}s video — EXACTLY {num_scenes} scenes)
+{self._get_scene_structure_guide(num_scenes, video_duration)}
 
 ## CRITICAL CONSTRAINTS
-- TOTAL VIDEO DURATION: EXACTLY {video_duration} seconds (NOT MORE)
+- TOTAL VIDEO DURATION: EXACTLY {video_duration} seconds (NOT MORE, NOT LESS)
 - EACH SCENE: MAXIMUM 8 seconds (Veo 3 generation limit)
-- Generate {num_scenes}-{num_scenes + 1} scenes to fit within {video_duration}s
+- YOU MUST GENERATE EXACTLY {num_scenes} SCENES — no more, no fewer
+- All scene durations must sum to {video_duration} seconds
+- visual_prompt MUST reference characters by their exact defined names from the 'characters' list, not generic labels or placeholders
+- EVERY character in the 'characters' list MUST appear in at least one scene — do NOT define characters that are never used
+- ALL dialogue (audio_script), master_script, text_overlay, and creative_notes MUST be written ENTIRELY in {primary_lang}. Do NOT mix languages. Do NOT use any other language.
 
 ## STYLE NOTES FOR {cc.tone.value.upper()} TONE
 {self._get_tone_guidance(cc.tone)}
@@ -170,11 +186,32 @@ Respond with ONLY the JSON object.
 """
         return prompt
     
+    def _get_scene_structure_guide(self, num_scenes: int, total_seconds: int) -> str:
+        """Build a dynamic scene structure guide for the given number of scenes."""
+        # Distribute durations evenly, each scene max 8s
+        base = total_seconds // num_scenes
+        remainder = total_seconds % num_scenes
+        durations = [min(8, base + (1 if i < remainder else 0)) for i in range(num_scenes)]
+        
+        labels = ["HOOK", "PROBLEM", "RED FLAG", "SOLUTION"]
+        if num_scenes == 2:
+            labels = ["HOOK + PROBLEM", "RED FLAG + SOLUTION"]
+        elif num_scenes == 3:
+            labels = ["HOOK", "PROBLEM + RED FLAG", "SOLUTION"]
+        elif num_scenes >= 5:
+            labels = ["HOOK"] + ["DEVELOPMENT"] * (num_scenes - 2) + ["SOLUTION"]
+        
+        lines = []
+        for i in range(num_scenes):
+            lbl = labels[i] if i < len(labels) else "DEVELOPMENT"
+            lines.append(f"{i + 1}. {lbl} (~{durations[i]}s)")
+        return "\n".join(lines)
+
     def _get_tone_guidance(self, tone: Tone) -> str:
         """Get specific guidance for the selected tone."""
         guidance = {
             Tone.URGENT: """
-- Use warning language: "AWAS!", "Hati-hati!", "Warning!"
+- Use warning language appropriate to the selected language
 - Fast pacing, quick cuts
 - Tense background music
 - Red/yellow color associations in visual prompts
@@ -360,6 +397,7 @@ PROFESSIONALS:
                 scene_breakdown=data["scene_breakdown"],
                 creative_notes=data.get("creative_notes"),
                 primary_language=input_data.creator_config.languages[0],
+                recommended_characters=data.get("characters", []),
             )
         except json.JSONDecodeError as e:
             # Log the problematic response for debugging

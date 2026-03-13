@@ -186,9 +186,15 @@ export interface ClipRefEntry {
 }
 
 export interface VeoClipEntry {
-  segment_id: number;
-  video_path: string;
+  segment_index: number;
+  filename: string;
+  path: string;
+  estimated_cost_usd?: number;
   video_uri?: string;
+  video_base64?: string;
+  // Aliases for backward compatibility
+  segment_id?: number;
+  video_path?: string;
 }
 
 export interface VisualAudioState {
@@ -572,6 +578,7 @@ export async function generateVideoPackage(
     tone: string;
     avatarId: string;
     videoFormat: string;
+    videoDurationSeconds?: number;
     directorInstructions?: string;
   }
 ): Promise<GenerateResponse> {
@@ -584,6 +591,7 @@ export async function generateVideoPackage(
       tone: config.tone,
       avatar_id: config.avatarId,
       video_format: config.videoFormat,
+      video_duration_seconds: config.videoDurationSeconds ?? null,
       director_instructions: config.directorInstructions,
     }),
   });

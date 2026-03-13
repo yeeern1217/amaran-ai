@@ -37,6 +37,12 @@ interface BackendChatMessage {
   content: string
 }
 
+function parseVideoLength(videoLength: string): number {
+  if (videoLength === "3min") return 180
+  const match = videoLength.match(/^(\d+)s$/)
+  return match ? parseInt(match[1], 10) : 30
+}
+
 export function PageStudio() {
   const { sessionId, config, setConfig, factCheck, scenes, setScenes, scenesGenerated, setScenesGenerated, setSensitivityReport, sensitivityReport, setCurrentStep, setRecommendedAvatars, recommendedCharacters, setRecommendedCharacters, setCharacterInfoList } = useApp()
   const [activeScene, setActiveScene] = useState(0)
@@ -57,6 +63,13 @@ export function PageStudio() {
   const allGenerated = scenes.length > 0 && scenes.every((s) => s.generated)
   const generatedCount = scenes.filter((s) => s.generated).length
   const totalDuration = scenes.reduce((sum, s) => sum + (s.duration || 8), 0)
+
+  /** Remove any leftover {primary_avatar_id} or {CharacterName} placeholders from scene text.
+   * The Director Agent now uses character names directly, but this strips any
+   * stale placeholders that might remain from older sessions. */
+  function cleanPlaceholders(text: string): string {
+    return text.replace(/\{[^}]+\}/g, '').replace(/  +/g, ' ').trim()
+  }
 
   // Brief reveal loading when entering Studio (gives visual feedback before scripts appear)
   useEffect(() => {
@@ -94,6 +107,7 @@ export function PageStudio() {
         const languageMap: Record<string, string> = {
           english: "English",
           malay: "Bahasa Melayu",
+          mandarin: "Chinese (Mandarin)",
           chinese: "Chinese (Mandarin)",
           tamil: "Tamil",
         }
@@ -109,7 +123,8 @@ export function PageStudio() {
           languages: [languageMap[config.language] || "English"],
           tone: toneMap[config.tone] || "Urgent/Warning",
           avatarId: config.avatar,
-          videoFormat: config.videoFormat === "reels" ? "reel" : config.videoFormat,
+          videoFormat: config.videoFormat,
+          videoDurationSeconds: parseVideoLength(config.videoLength),
         })
 
         // Store recommended avatars from AI (all recommendations, not just first)
@@ -134,15 +149,19 @@ export function PageStudio() {
               imageBase64: c.image_base64 ?? null,
             })))
           } else {
-            setCharacterInfoList(result.recommended_characters.map((role) => ({
-              role,
-              type: role.toLowerCase().includes("victim") || role.toLowerCase().includes("retiree")
-                ? "person" as const
-                : "scammer" as const,
-              description: "",
-              imageUrl: null,
-              imageBase64: null,
-            })))
+            setCharacterInfoList(result.recommended_characters.map((role) => {
+              const lower = role.toLowerCase()
+              const isPersonRole = lower.includes("victim") || lower.includes("retiree") || lower.includes("narrator") || lower.includes("officer") || lower.includes("inspektor") || lower.includes("inspector") || lower.includes("law enforcement") || lower.includes("police") || lower.includes("parent") || lower.includes("elderly") || lower.includes("teacher") || lower.includes("student")
+              return {
+                role,
+                type: isPersonRole
+                  ? "person" as const
+                  : "scammer" as const,
+                description: "",
+                imageUrl: null,
+                imageBase64: null,
+              }
+            }))
           }
         }
 
@@ -238,6 +257,7 @@ export function PageStudio() {
       const languageMap: Record<string, string> = {
         english: "English",
         malay: "Bahasa Melayu",
+        mandarin: "Chinese (Mandarin)",
         chinese: "Chinese (Mandarin)",
         tamil: "Tamil",
       }
@@ -253,7 +273,8 @@ export function PageStudio() {
         languages: [languageMap[config.language] || "English"],
         tone: toneMap[config.tone] || "Urgent/Warning",
         avatarId: config.avatar,
-        videoFormat: config.videoFormat === "reels" ? "reel" : config.videoFormat,
+        videoFormat: config.videoFormat,
+        videoDurationSeconds: parseVideoLength(config.videoLength),
         directorInstructions: `Generate scene ${sceneIndex + 1}`,
       })
 
@@ -457,7 +478,9 @@ export function PageStudio() {
                   <CardContent className="px-4 pb-4">
                     <div className="flex flex-wrap gap-2">
                       {recommendedCharacters.map((role) => {
-                        const isScammer = !role.toLowerCase().includes("victim") && !role.toLowerCase().includes("retiree")
+                        const lower = role.toLowerCase()
+                        const isPersonRole = lower.includes("victim") || lower.includes("retiree") || lower.includes("narrator") || lower.includes("officer") || lower.includes("inspektor") || lower.includes("inspector") || lower.includes("law enforcement") || lower.includes("police") || lower.includes("parent") || lower.includes("elderly") || lower.includes("teacher") || lower.includes("student")
+                        const isScammer = !isPersonRole
                         return (
                           <Badge
                             key={role}
@@ -503,7 +526,7 @@ export function PageStudio() {
                         Visual Description
                       </label>
                       <Textarea
-                        value={scene.description}
+                        value={cleanPlaceholders(scene.description)}
                         onChange={(e) => {
                           const updated = [...scenes]
                           updated[i] = { ...updated[i], description: e.target.value }
@@ -519,7 +542,7 @@ export function PageStudio() {
                         Dialogue / Audio
                       </label>
                       <Textarea
-                        value={scene.dialogue}
+                        value={cleanPlaceholders(scene.dialogue)}
                         onChange={(e) => {
                           const updated = [...scenes]
                           updated[i] = { ...updated[i], dialogue: e.target.value }

@@ -48,8 +48,7 @@ const tones = [
 ]
 
 const formats = [
-  { id: "reels", label: "Story / Reels", ratio: "9:16" },
-  { id: "post", label: "Square Post", ratio: "1:1" },
+  { id: "reel", label: "Story / Reels", ratio: "9:16" },
   { id: "landscape", label: "Landscape", ratio: "16:9" },
 ]
 
@@ -61,31 +60,53 @@ const videoLengths = [
   { id: "3min", label: "3 min", desc: "Long Form" },
 ]
 
-const recommended: Record<string, { ids: string[]; reason: string }> = {
-  audience: {
-    ids: ["seniors"],
-    reason:
-      "Seniors are among the most targeted and vulnerable demographics for scams. Content tailored to them can have the highest protective impact.",
-  },
-  format: {
-    ids: ["landscape"],
-    reason:
-      "Landscape (16:9) is optimal for TV broadcasts, community screenings, and desktop viewing — the primary channels seniors engage with.",
-  },
-  tone: {
-    ids: ["urgent"],
-    reason:
-      "An urgent warning tone drives immediate attention and action, which is critical when raising scam awareness before victims fall prey.",
-  },
-  length: {
-    ids: ["90s"],
-    reason:
-      "90 seconds gives enough room to dramatise the full Macau Scam playbook — from the initial Pos Laju hook through the fake police transfer to the counter-hack resolution — while staying within the attention span of the 40-65 demographic on Facebook and WhatsApp.",
-  },
+function buildRecommendations(
+  factCheck: { scam_name: string; category: string; victim_profile: string | null }
+): Record<string, { ids: string[]; reason: string }> {
+  const scamName = factCheck.scam_name || "this scam"
+  const victimProfile = factCheck.victim_profile || ""
+  const category = factCheck.category || ""
+
+  // Determine best audience from victim profile keywords
+  const targetsSeniors = /elder|senior|retiree|retired|elderly|older|60|65|pensioner/i.test(victimProfile)
+  const targetsYouth = /young|youth|student|teenager|millennial|gen.z|20s|30s/i.test(victimProfile)
+  const audienceId = targetsSeniors ? "seniors" : targetsYouth ? "young-adults" : "general"
+
+  const audienceReasonMap: Record<string, string> = {
+    seniors: `${scamName} predominantly targets seniors who may have lower digital literacy and more accumulated savings. Content tailored specifically to them delivers the highest protective impact.`,
+    "young-adults": `Analysis of ${scamName} shows young adults are the primary victims, typically engaged through social media and digital channels. Targeted content resonates more effectively with this demographic.`,
+    general: `${scamName} affects a broad range of demographics, making general public messaging the most effective approach to maximise awareness across all age groups.`,
+  }
+
+  // Determine best format based on audience
+  const formatId = targetsSeniors ? "landscape" : "reels"
+  const formatReasonMap: Record<string, string> = {
+    landscape: `Landscape (16:9) is optimal for TV broadcasts, WhatsApp video shares, and desktop viewing — the primary channels the senior demographic consumes awareness content through.`,
+    reels: `Vertical Reels (9:16) maximises reach on TikTok, Instagram, and Facebook Stories — where the target demographic for ${scamName} is most active.`,
+  }
+
+  // Determine best length based on scam complexity
+  const complexCategories = ["investment", "love", "digital arrest", "banking"]
+  const isComplex = complexCategories.some((c) => category.toLowerCase().includes(c))
+  const lengthId = isComplex ? "90s" : "60s"
+  const lengthReason = isComplex
+    ? `90 seconds provides enough time to dramatise the full ${scamName} playbook — from the initial hook through escalation to the counter-hack resolution — while staying within the attention span of the target audience on WhatsApp and Facebook.`
+    : `60 seconds is the sweet spot for ${scamName} awareness — enough to clearly cover the hook, key red flag, and the fix without losing viewer attention on social media.`
+
+  return {
+    audience: { ids: [audienceId], reason: audienceReasonMap[audienceId] },
+    format: { ids: [formatId], reason: formatReasonMap[formatId] },
+    tone: {
+      ids: ["urgent"],
+      reason: `An urgent warning tone is critical for ${scamName} awareness — it drives immediate attention and motivates potential victims to take protective action before falling prey.`,
+    },
+    length: { ids: [lengthId], reason: lengthReason },
+  }
 }
 
 export function PageConfig() {
   const { config, setConfig, factCheck, setCurrentStep, sessionId } = useApp()
+  const recommended = buildRecommendations(factCheck)
   const selectedAudience = audiences.find((a) => a.id === config.targetAudience)
   const selectedTone = tones.find((t) => t.id === config.tone)
   const selectedFormat = formats.find((f) => f.id === config.videoFormat)
@@ -259,8 +280,7 @@ export function PageConfig() {
                             <div
                               className={cn(
                                 "rounded border-2",
-                                fmt.id === "reels" && "w-5 h-8",
-                                fmt.id === "post" && "w-7 h-7",
+                                fmt.id === "reel" && "w-5 h-8",
                                 fmt.id === "landscape" && "w-9 h-5",
                                 config.videoFormat === fmt.id
                                   ? "border-cyan-400"

@@ -53,13 +53,17 @@ export function PageCharacter() {
   const characters: CharacterInfo[] =
     characterInfoList.length > 0
       ? characterInfoList
-      : recommendedCharacters.map((role) => ({
-          role,
-          type: role.toLowerCase().includes("victim") ? "person" as const : "scammer" as const,
-          description: "",
-          imageUrl: CHARACTER_IMAGE_MAP[role] || null,
-          imageBase64: null,
-        }))
+      : recommendedCharacters.map((role) => {
+          const lower = role.toLowerCase()
+          const isPersonRole = lower.includes("victim") || lower.includes("retiree") || lower.includes("narrator") || lower.includes("officer") || lower.includes("inspektor") || lower.includes("inspector") || lower.includes("law enforcement") || lower.includes("police") || lower.includes("parent") || lower.includes("elderly") || lower.includes("teacher") || lower.includes("student")
+          return {
+            role,
+            type: isPersonRole ? "person" as const : "scammer" as const,
+            description: "",
+            imageUrl: CHARACTER_IMAGE_MAP[role] || null,
+            imageBase64: null,
+          }
+        })
 
   const handleChatSend = async () => {
     const message = chatInput.trim()
@@ -89,13 +93,17 @@ export function PageCharacter() {
 
       // If characters were updated, apply them
       if (result.updated && result.updated_characters) {
-        const updatedInfoList: CharacterInfo[] = result.updated_characters.map((c) => ({
-          role: c.role,
-          type: c.type,
-          description: c.description,
-          imageUrl: c.image_url,
-          imageBase64: c.image_base64,
-        }))
+        const updatedInfoList: CharacterInfo[] = result.updated_characters.map((c) => {
+          // Preserve existing image if new one is not provided
+          const existing = characters.find((ch) => ch.role === c.role)
+          return {
+            role: c.role,
+            type: c.type,
+            description: c.description,
+            imageUrl: c.image_url ?? existing?.imageUrl ?? null,
+            imageBase64: c.image_base64 ?? existing?.imageBase64 ?? null,
+          }
+        })
         setCharacterInfoList(updatedInfoList)
       }
     } catch (err) {
@@ -263,7 +271,7 @@ export function PageCharacter() {
           <ArrowLeft className="size-4" />
           Back to Studio
         </Button>
-        <Button onClick={() => setCurrentStep(4)} size="sm">
+        <Button onClick={() => setCurrentStep(4)} size="sm" disabled={isChatLoading}>
           Proceed to Preview
           <ArrowRight className="size-4" />
         </Button>

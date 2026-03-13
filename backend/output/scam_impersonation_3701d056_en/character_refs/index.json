@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Law Enforcement Narrator (Inspektor Amir)",
+    "description": "FULL BODY. A Malaysian male in his late 30s with a neat, short haircut. He is wearing a formal dark blue Royal Malaysia Police (PDRM) uniform including the professional blue collared shirt with insignias, dark navy trousers, and polished black leather dress shoes.",
+    "filename": "Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_impersonation_3701d056_en\\character_refs\\Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "Elderly Victim (Puan Aminah)",
+    "description": "FULL BODY. A Malaysian woman in her 60s. She wears a traditional floral Baju Kurung in soft pastel colors and a neatly pinned light-colored hijab (tudung). She is wearing simple leather sandals.",
+    "filename": "Elderly_Victim_Puan_Aminah_2x2_grid.png",
+    "path": "output\\scam_impersonation_3701d056_en\\character_refs\\Elderly_Victim_Puan_Aminah_2x2_grid.png"
+  },
+  {
+    "role": "AI Voice Scammer (The Caller)",
+    "description": "FULL BODY. An anonymous, featureless human silhouette standing in front of digital displays. The figure is a dark, shadowy void with a glowing blue digital pulse emanating from the chest area to represent voice cloning, wearing a hooded jacket with no visible face or skin.",
+    "filename": "AI_Voice_Scammer_The_Caller_2x2_grid.png",
+    "path": "output\\scam_impersonation_3701d056_en\\character_refs\\AI_Voice_Scammer_The_Caller_2x2_grid.png"
+  },
+  {
+    "role": "Victim's Family Member (The Son)",
+    "description": "FULL BODY. A Malaysian male in his early 30s. He has clean-cut black hair and is wearing a smart-casual office outfit consisting of a tucked-in light blue button-down shirt, dark khaki trousers, and brown leather loafers.",
+    "filename": "Victim_s_Family_Member_The_Son_2x2_grid.png",
+    "path": "output\\scam_impersonation_3701d056_en\\character_refs\\Victim_s_Family_Member_The_Son_2x2_grid.png"
+  }
+]

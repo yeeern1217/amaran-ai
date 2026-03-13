@@ -1,0 +1,32 @@
+[
+  {
+    "role": "Elderly victim",
+    "description": "FULL BODY. A Malaysian male in his late 60s with short graying hair, wearing a comfortable batik-patterned short-sleeve shirt in light blue and beige, paired with dark trousers and simple sandals.",
+    "filename": "Elderly_victim_2x2_grid.png",
+    "path": "output\\scam_impersonation_2cacceb7_en\\character_refs\\Elderly_victim_2x2_grid.png"
+  },
+  {
+    "role": "The AI scammer",
+    "description": "FULL BODY. An anonymous and featureless human silhouette standing in a dark room. The figure is solid black with glowing faint digital circuitry lines tracing over its surface, wearing a dark hooded sweatshirt that obscures the face entirely.",
+    "filename": "The_AI_scammer_2x2_grid.png",
+    "path": "output\\scam_impersonation_2cacceb7_en\\character_refs\\The_AI_scammer_2x2_grid.png"
+  },
+  {
+    "role": "The victim's daughter",
+    "description": "FULL BODY. A Malaysian woman in her late 30s with a professional appearance. She is wearing a modern Baju Kurung in a soft lavender color, dark formal shoes, and her hair is neatly tied back in a low bun.",
+    "filename": "The_victim_s_daughter_2x2_grid.png",
+    "path": "output\\scam_impersonation_2cacceb7_en\\character_refs\\The_victim_s_daughter_2x2_grid.png"
+  },
+  {
+    "role": "Impersonated police official",
+    "description": "FULL BODY. A Malaysian male in a sharp, dark navy blue Royal Malaysia Police (PDRM) uniform, including a peaked cap, polished black tactical boots, and official insignia on the shoulders.",
+    "filename": "Impersonated_police_official_2x2_grid.png",
+    "path": "output\\scam_impersonation_2cacceb7_en\\character_refs\\Impersonated_police_official_2x2_grid.png"
+  },
+  {
+    "role": "Inspektor Amir (Awareness Officer)",
+    "description": "FULL BODY. A Malaysian male in his early 40s with a clean-shaven face and short, disciplined haircut. He wears a high-ranking PDRM officer's uniform consisting of a dark blue tactical shirt with merit ribbons, matching trousers, and polished black leather boots.",
+    "filename": "Inspektor_Amir_Awareness_Officer_2x2_grid.png",
+    "path": "output\\scam_impersonation_2cacceb7_en\\character_refs\\Inspektor_Amir_Awareness_Officer_2x2_grid.png"
+  }
+]

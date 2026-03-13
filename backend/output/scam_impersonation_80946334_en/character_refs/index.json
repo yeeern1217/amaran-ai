@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Elderly grandmother",
+    "description": "FULL BODY. A Malaysian woman in her late 70s with a soft, pastel-coloured tudung covering her grey hair. She wears a traditional floral Baju Kurung in soft cotton and simple sandals. She has a gentle, aged appearance with subtle wrinkles.",
+    "filename": "Elderly_grandmother_2x2_grid.png",
+    "path": "output\\scam_impersonation_80946334_en\\character_refs\\Elderly_grandmother_2x2_grid.png"
+  },
+  {
+    "role": "Adult son",
+    "description": "FULL BODY. A Malaysian man in his early 40s with short black hair. He is dressed in a smart-casual office attire consisting of a light blue collared shirt, dark grey slacks, and black leather shoes.",
+    "filename": "Adult_son_2x2_grid.png",
+    "path": "output\\scam_impersonation_80946334_en\\character_refs\\Adult_son_2x2_grid.png"
+  },
+  {
+    "role": "AI Voice Scammer",
+    "description": "FULL BODY. An anonymous, featureless human silhouette draped in a dark hoodie. The figure is surrounded by glowing blue digital voice waveforms and binary code patterns that trail off its limbs like static.",
+    "filename": "AI_Voice_Scammer_2x2_grid.png",
+    "path": "output\\scam_impersonation_80946334_en\\character_refs\\AI_Voice_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Law Enforcement Narrator",
+    "description": "FULL BODY. A Malaysian male officer in his mid-40s with a clean-shaven face and short military-style haircut. He is wearing a formal dark navy blue police uniform with silver badges, insignia on the shoulders, and polished black boots.",
+    "filename": "Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_impersonation_80946334_en\\character_refs\\Law_Enforcement_Narrator_2x2_grid.png"
+  }
+]

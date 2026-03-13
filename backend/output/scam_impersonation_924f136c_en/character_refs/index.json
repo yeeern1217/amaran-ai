@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Inspektor Amir",
+    "description": "FULL BODY, head to toe. A 35-year-old Malaysian man with short, neat black hair, wearing a crisp, professional dark blue Royal Malaysia Police (PDRM) uniform including a peaked cap, silver badges, and polished black boots.",
+    "filename": "Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_impersonation_924f136c_en\\character_refs\\Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "Puan Aminah",
+    "description": "FULL BODY, head to toe. A 65-year-old Malaysian woman with a kind face, wearing a traditional floral print Baju Kurung with a matching light-colored hijab (tudung), and simple black sandals.",
+    "filename": "Puan_Aminah_2x2_grid.png",
+    "path": "output\\scam_impersonation_924f136c_en\\character_refs\\Puan_Aminah_2x2_grid.png"
+  },
+  {
+    "role": "Victim's Son",
+    "description": "FULL BODY, head to toe. A 30-year-old Malaysian man with short black hair, wearing a smart-casual office outfit consisting of a light blue button-down shirt, dark grey slacks, and brown leather shoes.",
+    "filename": "Victim_s_Son_2x2_grid.png",
+    "path": "output\\scam_impersonation_924f136c_en\\character_refs\\Victim_s_Son_2x2_grid.png"
+  },
+  {
+    "role": "Anonymous AI Scammer",
+    "description": "FULL BODY, head to toe. An anonymous, featureless human silhouette made of dark shifting digital static, wearing a shadowy hooded jacket. Their face is a blank void with a faint blue glowing sound-wave pattern where a mouth would be.",
+    "filename": "Anonymous_AI_Scammer_2x2_grid.png",
+    "path": "output\\scam_impersonation_924f136c_en\\character_refs\\Anonymous_AI_Scammer_2x2_grid.png"
+  }
+]

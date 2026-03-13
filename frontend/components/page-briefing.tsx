@@ -9,6 +9,8 @@ import {
   chatFactSheet,
   type FrontendFactCheck,
 } from "@/lib/api"
+import { ChatPanel } from "@/components/ui/chat-panel"
+import type { ChatMessage } from "@/components/ui/chat-panel"
 
 type ApiChatMessage = { role: "user" | "assistant"; content: string }
 import { Button } from "@/components/ui/button"
@@ -39,8 +41,7 @@ import {
   Loader2,
   CheckCircle2,
   WifiOff,
-  Send,
-  Sparkles,
+
   Pencil,
   ChevronDown,
   ChevronUp,
@@ -50,11 +51,6 @@ import {
   Users,
   Shield,
 } from "lucide-react"
-
-interface ChatMessage {
-  role: "user" | "ai"
-  text: string
-}
 
 export function PageBriefing() {
   const {
@@ -89,7 +85,6 @@ export function PageBriefing() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState("")
   const [chatLoading, setChatLoading] = useState(false)
-  const chatContainerRef = useRef<HTMLDivElement>(null)
 
   const verifiedCount = [
     factCheck.scam_name_verified,
@@ -99,14 +94,6 @@ export function PageBriefing() {
   ].filter(Boolean).length
 
   const allVerified = verifiedCount === 4
-
-  // Auto-scroll chat
-  useEffect(() => {
-    const container = chatContainerRef.current
-    if (container) {
-      container.scrollTop = container.scrollHeight
-    }
-  }, [chatMessages])
 
   // Auto-scroll research thoughts
   useEffect(() => {
@@ -573,7 +560,7 @@ export function PageBriefing() {
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center gap-2">
                         <Brain className="size-4 text-cyan-400" />
-                        <span className="text-sm font-semibold text-foreground">Deep Research Intelligence</span>
+                        <span className="text-sm font-semibold text-foreground">{useDeepResearch ? "Deep Research Intelligence" : "Research Intelligence"}</span>
                         <Badge variant="outline" className="text-cyan-400 border-cyan-500/30 bg-cyan-500/10 text-[10px] px-1.5 py-0">
                           AI Research
                         </Badge>
@@ -762,85 +749,17 @@ export function PageBriefing() {
           </Card>
 
           {/* AI Refine Chat */}
-          <Card className="border-border bg-card flex flex-col flex-1 min-h-[400px]">
-            <CardHeader className="pb-2 pt-3 px-4">
-              <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="size-4 text-cyan-400" />
-                AI Refine Agent
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col flex-1 gap-3 px-4 pb-3 pt-0">
-              {/* Messages */}
-              <div ref={chatContainerRef} className="flex flex-col gap-2.5 flex-1 overflow-y-auto max-h-[400px] min-h-[200px] pr-1">
-                {chatMessages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "rounded-xl px-3.5 py-2.5 text-sm max-w-[90%] animate-in fade-in slide-in-from-bottom-2 duration-300",
-                      msg.role === "user"
-                        ? "bg-cyan-500/90 text-white self-end rounded-br-sm shadow-[0_2px_12px_oklch(0.60_0.14_200/0.20)]"
-                        : "bg-secondary/80 text-foreground self-start rounded-bl-sm backdrop-blur-sm"
-                    )}
-                  >
-                    {msg.role === "ai" && (
-                      <span className="text-[10px] text-cyan-400 font-medium block mb-0.5">
-                        AI Agent
-                      </span>
-                    )}
-                    <span className="leading-relaxed">{msg.text}</span>
-                  </div>
-                ))}
-                {chatLoading && (
-                  <div className="bg-secondary rounded-xl px-3.5 py-2.5 self-start rounded-bl-sm animate-in fade-in duration-200">
-                    <span className="text-[10px] text-cyan-400 font-medium block mb-0.5">
-                      AI Agent
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <div
-                        className="size-1.5 rounded-full bg-cyan-400 animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      />
-                      <div
-                        className="size-1.5 rounded-full bg-cyan-400 animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <div
-                        className="size-1.5 rounded-full bg-cyan-400 animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Chat input */}
-              <div className="flex gap-2 pt-1">
-                <Input
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && !e.shiftKey && handleChatSend()
-                  }
-                  placeholder="e.g. Make the story hook shorter..."
-                  className="bg-input border-border text-foreground placeholder:text-muted-foreground text-sm"
-                  disabled={chatLoading}
-                />
-                <Button
-                  size="icon"
-                  onClick={handleChatSend}
-                  disabled={!chatInput.trim() || chatLoading}
-                  className="bg-cyan-500 hover:bg-cyan-600 shrink-0"
-                >
-                  {chatLoading ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Send className="size-4" />
-                  )}
-                  <span className="sr-only">Send</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <ChatPanel
+            title="AI Refine Agent"
+            messages={chatMessages}
+            input={chatInput}
+            onInputChange={setChatInput}
+            onSend={handleChatSend}
+            isLoading={chatLoading}
+            placeholder="e.g. Make the story hook shorter..."
+            emptyStateText="Ask me to refine anything in the fact sheet — I can update the scam name, story, red flags, or solutions."
+            className="flex-1 min-h-[400px]"
+          />
         </div>
       </div>
     </div>

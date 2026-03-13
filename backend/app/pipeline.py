@@ -238,8 +238,8 @@ class PipelineOrchestrator:
         """
         # Apply corrections if any
         if corrections:
-            update_dict = {**corrections}
-            fact_sheet = fact_sheet.model_copy(update=update_dict)
+            update_dict = {**fact_sheet.model_dump(), **corrections}
+            fact_sheet = FactSheet.model_validate(update_dict)
         
         # Mark as verified
         verified = fact_sheet.verify(officer_id, notes)
@@ -590,6 +590,8 @@ class PipelineOrchestrator:
             fact_sheet=fact_sheet,
             scenes=scenes_dicts,
             output_dir=base_dir,
+            video_format=video_input.meta_data.video_format,
+            total_duration_seconds=video_input.meta_data.total_duration_seconds,
         )
         
         logger.info(f"Starting Visual/Audio Agent for {video_input.project_id}")
@@ -640,6 +642,7 @@ class PipelineOrchestrator:
         agent = self.visual_audio_agent
         agent._ensure_client()
         agent._state.output_dir = str(base_dir)
+        agent._state.video_format = video_input.meta_data.video_format
         
         # Load existing state if available (from previous runs) to reuse completed stages
         if self._state and self._state.visual_audio:

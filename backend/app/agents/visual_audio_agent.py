@@ -57,6 +57,7 @@ VEO_MODEL = "veo-3.1-fast-generate-preview"
 VEO_CLIP_SEC = 8
 VEO_COST_PER_SEC = 0.15
 
+
 NANO_BANANA_STYLE = (
     "Photorealistic, soft key light with subtle fill, neutral grey studio backdrop. "
     "Same character in all four panels—consistent lighting, rendering, and proportions "
@@ -70,12 +71,23 @@ RETRY_BASE_DELAY = 1  # seconds
 # ---------------------------------------------------------------------------
 # Input model
 # ---------------------------------------------------------------------------
+# Maps video format to Veo/image aspect ratio
+VIDEO_FORMAT_ASPECT = {
+    "reel": "9:16",
+    "story": "9:16",
+    "post": "1:1",
+    "landscape": "16:9",
+}
+
+
 class VisualAudioInput(BaseModel):
     """Input to the Visual/Audio Agent – one language version from the pipeline."""
     project_id: str
     fact_sheet: FactSheet
     scenes: List[Dict[str, Any]]  # Scene dicts from VisualAudioAgentInput
     output_dir: str = Field(default="output", description="Base directory for generated assets")
+    video_format: str = Field(default="reel", description="Video format: reel, story, post, or landscape")
+    total_duration_seconds: int = Field(default=30, description="Target total video duration")
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +132,7 @@ class VisualAudioAgent(BaseAgent):
             base_dir = Path(input_data.output_dir)
             base_dir.mkdir(parents=True, exist_ok=True)
             self._state.output_dir = str(base_dir)
+            self._state.video_format = input_data.video_format
 
             # Stage 1: Expand to full story
             story = await self.expand_to_story(input_data.fact_sheet, input_data.scenes)
@@ -475,9 +488,10 @@ class VisualAudioAgent(BaseAgent):
             parts = _build_clip_start_parts(char_paths, start_text, prev_end_path)
             start_path = out_dir / f"segment_{seg_idx}_start.png"
 
+            clip_aspect = VIDEO_FORMAT_ASPECT.get(self._state.video_format, "9:16")
             img = await asyncio.get_event_loop().run_in_executor(
                 None,
-                lambda p=parts: self._call_image_sync("", aspect_ratio="16:9", image_size="1K", parts=p),
+                lambda p=parts, ar=clip_aspect: self._call_image_sync("", aspect_ratio=ar, image_size="1K", parts=p),
             )
             if img is not None:
                 img.save(start_path)
@@ -499,7 +513,7 @@ class VisualAudioAgent(BaseAgent):
 
                 img = await asyncio.get_event_loop().run_in_executor(
                     None,
-                    lambda p=end_parts: self._call_image_sync("", aspect_ratio="16:9", image_size="1K", parts=p),
+                    lambda p=end_parts, ar=clip_aspect: self._call_image_sync("", aspect_ratio=ar, image_size="1K", parts=p),
                 )
                 if img is not None:
                     img.save(end_path)
@@ -559,8 +573,9 @@ class VisualAudioAgent(BaseAgent):
 
             # Interpolation mode: API doesn't allow reference_images with start/end frames
             use_refs = ref_images and first_image is None
+            veo_aspect = VIDEO_FORMAT_ASPECT.get(self._state.video_format, "9:16")
             config = types.GenerateVideosConfig(
-                aspect_ratio="16:9",
+                aspect_ratio=veo_aspect,
                 last_frame=last_image,
                 reference_images=ref_images if use_refs else None,
             )

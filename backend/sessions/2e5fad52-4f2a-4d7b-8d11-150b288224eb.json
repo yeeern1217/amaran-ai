@@ -1,0 +1,556 @@
+{
+  "session_id": "2e5fad52-4f2a-4d7b-8d11-150b288224eb",
+  "intake": {
+    "source_type": "news_url",
+    "content": "https://www.scmp.com/news/asia/southeast-asia/article/3336558/malaysian-woman-loses-us293000-after-hiring-anti-scam-firm-recoup-us366",
+    "additional_context": null,
+    "officer_id": null,
+    "timestamp": "2026-03-13T10:28:55.681177"
+  },
+  "intake_status": "completed",
+  "fact_sheet": {
+    "scam_name": "Fraudulent Fund Recovery Scam",
+    "story_hook": "Victims who have already lost money to scams are targeted by fraudsters posing as 'anti-scam firms' or legal experts. These scammers promise to help recover lost funds with unusually high success rates, often demanding upfront fees or personal banking details, only to defraud the victim of even more money.",
+    "red_flag": "Be immediately suspicious of any individual or organisation that guarantees or promises unusually high success rates for recovering lost scam funds, especially if they request upfront payments, processing fees, or sensitive personal and banking information.",
+    "the_fix": "If you suspect you have fallen victim to a fraudulent recovery service, immediately contact the National Scam Response Centre (NSRC) hotline at 997. Also, report the incident to your bank and file a police report at the nearest police station as soon as possible. Remember, official bodies like PDRM and NSRC do not use private channels or request payments for investigations or fund recovery.",
+    "reference_sources": [
+      "https://www.scmp.com/news/asia/southeast-asia/article/3336558/malaysian-woman-loses-us293000-after-hiring-anti-scam-firm-recoup-us366",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF0wlYGNixGiC_t-GtYBr_o-stFvKDLWDovu72eisbWyCX2k7I65Fq9GrX1e6S3p4qxN7cOPozIZA_MU7RRL6GKnN1Z19FMKMcJ68or4M2nqtfMkUBozKgMxu0M-k4D4Gt4TrrKaDxoKw==",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGZgg40p-sYL8Gxk_LfVrXEb9NQko2FGlG8yYHhKh_7I_6dMEWRamuP7s8GyAF8gkDRfsPkvh1EJjHaEmUahFy0En92ryiZPb-usf4KttU2gD0EQv_hceiVcg3JTfSOrQna1_iKZ1-bZNMZO3O8T9od9THsOdpyEdjg9Ktav9g-hiCVYPilscyNwF7_4Ud1o2hsBDy-IUMUBHCts4E7NkE2",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGH-MIK954W_FgVpXgaYA_nv5uS9L8srGOuXSDsYSJuw2lW0m0AoNjwB3VKkXjHZPoyn7ye39m-grpYuzJOlEf8U6jLeylfa90yOrsxOtQuYXKK8P8gcictw5jwaUckhgxHN1xGZVtZ39ah39w3RmHKcFyRcmz3fnoINU4gdUu5T77lE6kDOjqw3X7x-0C6ZZKZISN6olQeBQMOIUOk7599oHVTAp65fGBtEcB3aGBhyze1rTvzLg==",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEOwf2g-qGbV7UuTzmnf8G8tYg1fgBUfNddO4_tA_lNmfuLzvFL_W10DqqBQ96oj-aFoqjRYp0AG-i1PmtVXU0S1Oo7vLi9UQQW0DJzdfBpduWDvPJa3qXl8N7NjgCaT0f4Soy9dX0p07uF",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG3sNnIWlGrC3U47nlYmNitqTby0hCi6vjkmXF3alt7liUviRRqw8xKS19MK6VcMnTy7OFAu_8XMEq_oScy33O_apS-zo3BNLaNS1gZ8jFR_AXrRhzxlhd3Txt0fwYYj_s-Q-iW6J2AzR4=",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF8hJL4wXSa1dfTV6ob9-tENKQG6XziAU4UKg9SfzQZndEROSEbDRMvLuv8flWrpPbSWNKvj7v5QwrNdIlXv9WVrH27Ws3DcMnVowi0dmSZds6GJSJ4TspYzUOT_LQPPfXZVnZ5wTyM5snQm34uH8jwiNougMnP5nEIRZ-gpUKUQ_ye11zNNzl9ff-V5Huz432NinYbUDM6GXGyef6ZVWnOLTA1IPqTF2Y="
+    ],
+    "category": "Other",
+    "verified_by_officer": true,
+    "verification_timestamp": "2026-03-13T10:29:26.837992",
+    "officer_notes": "Auto-verified for generation",
+    "global_ancestry": null,
+    "psychological_exploit": null,
+    "victim_profile": null,
+    "counter_hack": null
+  },
+  "fact_sheet_status": "completed",
+  "scam_report": {
+    "title": "Fraudulent Fund Recovery Scam",
+    "category": "Other",
+    "severity": "medium",
+    "description": "Victims who have already lost money to scams are targeted by fraudsters posing as 'anti-scam firms' or legal experts. These scammers promise to help recover lost funds with unusually high success rates, often demanding upfront fees or personal banking details, only to defraud the victim of even more money. Auto-verified for generation",
+    "story_hook": "Victims who have already lost money to scams are targeted by fraudsters posing as 'anti-scam firms' or legal experts. These scammers promise to help recover lost funds with unusually high success rates, often demanding upfront fees or personal banking details, only to defraud the victim of even more money.",
+    "red_flag": "Be immediately suspicious of any individual or organisation that guarantees or promises unusually high success rates for recovering lost scam funds, especially if they request upfront payments, processing fees, or sensitive personal and banking information.",
+    "the_fix": "If you suspect you have fallen victim to a fraudulent recovery service, immediately contact the National Scam Response Centre (NSRC) hotline at 997. Also, report the incident to your bank and file a police report at the nearest police station as soon as possible. Remember, official bodies like PDRM and NSRC do not use private channels or request payments for investigations or fund recovery.",
+    "source_urls": [
+      "https://www.scmp.com/news/asia/southeast-asia/article/3336558/malaysian-woman-loses-us293000-after-hiring-anti-scam-firm-recoup-us366",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF0wlYGNixGiC_t-GtYBr_o-stFvKDLWDovu72eisbWyCX2k7I65Fq9GrX1e6S3p4qxN7cOPozIZA_MU7RRL6GKnN1Z19FMKMcJ68or4M2nqtfMkUBozKgMxu0M-k4D4Gt4TrrKaDxoKw==",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGZgg40p-sYL8Gxk_LfVrXEb9NQko2FGlG8yYHhKh_7I_6dMEWRamuP7s8GyAF8gkDRfsPkvh1EJjHaEmUahFy0En92ryiZPb-usf4KttU2gD0EQv_hceiVcg3JTfSOrQna1_iKZ1-bZNMZO3O8T9od9THsOdpyEdjg9Ktav9g-hiCVYPilscyNwF7_4Ud1o2hsBDy-IUMUBHCts4E7NkE2",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGH-MIK954W_FgVpXgaYA_nv5uS9L8srGOuXSDsYSJuw2lW0m0AoNjwB3VKkXjHZPoyn7ye39m-grpYuzJOlEf8U6jLeylfa90yOrsxOtQuYXKK8P8gcictw5jwaUckhgxHN1xGZVtZ39ah39w3RmHKcFyRcmz3fnoINU4gdUu5T77lE6kDOjqw3X7x-0C6ZZKZISN6olQeBQMOIUOk7599oHVTAp65fGBtEcB3aGBhyze1rTvzLg==",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEOwf2g-qGbV7UuTzmnf8G8tYg1fgBUfNddO4_tA_lNmfuLzvFL_W10DqqBQ96oj-aFoqjRYp0AG-i1PmtVXU0S1Oo7vLi9UQQW0DJzdfBpduWDvPJa3qXl8N7NjgCaT0f4Soy9dX0p07uF",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG3sNnIWlGrC3U47nlYmNitqTby0hCi6vjkmXF3alt7liUviRRqw8xKS19MK6VcMnTy7OFAu_8XMEq_oScy33O_apS-zo3BNLaNS1gZ8jFR_AXrRhzxlhd3Txt0fwYYj_s-Q-iW6J2AzR4=",
+      "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF8hJL4wXSa1dfTV6ob9-tENKQG6XziAU4UKg9SfzQZndEROSEbDRMvLuv8flWrpPbSWNKvj7v5QwrNdIlXv9WVrH27Ws3DcMnVowi0dmSZds6GJSJ4TspYzUOT_LQPPfXZVnZ5wTyM5snQm34uH8jwiNougMnP5nEIRZ-gpUKUQ_ye11zNNzl9ff-V5Huz432NinYbUDM6GXGyef6ZVWnOLTA1IPqTF2Y="
+    ],
+    "victims_profile": null,
+    "financial_impact": null
+  },
+  "creator_config": {
+    "target_groups": [
+      "General Public"
+    ],
+    "languages": [
+      "English"
+    ],
+    "tone": "Urgent/Warning",
+    "avatar": {
+      "id": "officer_malay_male_01",
+      "name": "Inspektor Amir",
+      "rank": "Inspektor",
+      "gender": "male",
+      "ethnicity": "malay"
+    },
+    "video_duration_seconds": null,
+    "video_format": "reel",
+    "director_instructions": null
+  },
+  "director_output": {
+    "project_id": "scam_other_2e5fad52",
+    "master_script": "AWAS! Have you been scammed before? Lost your hard-earned money? Scammers are now targeting victims again! They pretend to be 'recovery firms', promising to get your money back. But it's a trap! RED FLAG! If they guarantee high success, or ask for upfront fees or your bank details to 'recover' funds, it's a scam! Official bodies NEVER ask for payment. If you're a victim of a fake recovery service, contact NSRC 997 immediately! Report to your bank and police. Protect yourself! Don't be fooled twice!",
+    "scene_breakdown": [
+      {
+        "scene_id": 1,
+        "duration_est_seconds": 6,
+        "purpose": "HOOK - grab attention immediately",
+        "visual_prompt": "{primary_avatar_id} (Inspektor Amir) appears with a concerned expression, then quickly becomes stern, looking directly at the camera. Flashing text 'SCAMMED?' appears and disappears rapidly. Background shifts from dark to urgent red.",
+        "audio_script": "AWAS! Have you been scammed before? Lost your hard-earned money?",
+        "text_overlay": "AWAS! SCAM RECOVERY BARU!",
+        "transition": "cut",
+        "background_music_mood": "tense"
+      },
+      {
+        "scene_id": 2,
+        "duration_est_seconds": 8,
+        "purpose": "PROBLEM - show the scam scenario",
+        "visual_prompt": "{primary_avatar_id} points decisively towards the side. An animated sequence shows a silhouette of a person losing money, then a fake 'recovery service' logo appears with a promise, followed by more money disappearing from the person. A digital 'trap' graphic flashes.",
+        "audio_script": "Scammers are now targeting victims again! They pretend to be 'recovery firms', promising to get your money back. But it's a trap!",
+        "text_overlay": "SCAMMER SASAR MANGSA LAGI! FAKE RECOVERY SERVICE!",
+        "transition": "cut",
+        "background_music_mood": "suspenseful"
+      },
+      {
+        "scene_id": 3,
+        "duration_est_seconds": 8,
+        "purpose": "RED FLAG - highlight the warning sign",
+        "visual_prompt": "{primary_avatar_id} holds up a hand, shaking his head firmly with a serious expression. A bold, red 'X' appears over graphics of a money bag (representing upfront fees) and a credit card/bank details icon. Text 'Official bodies NEVER ask for payment' appears strongly.",
+        "audio_script": "RED FLAG! If they guarantee high success, or ask for upfront fees or your bank details to 'recover' funds, it's a scam! Official bodies NEVER ask for payment.",
+        "text_overlay": "JANGAN BAYAR UPFRONT! JANGAN BAGI BANK DETAILS!",
+        "transition": "cut",
+        "background_music_mood": "urgent"
+      },
+      {
+        "scene_id": 4,
+        "duration_est_seconds": 8,
+        "purpose": "SOLUTION - clear action steps + helpline",
+        "visual_prompt": "{primary_avatar_id} points to a clear, large display of 'NSRC 997'. Icons for a bank and a police station appear next to the number. {primary_avatar_id} finishes with a direct, commanding, yet reassuring look. Background shifts to a more neutral but still urgent color.",
+        "audio_script": "If you're a victim of a fake recovery service, contact NSRC 997 immediately! Report to your bank and police. Protect yourself! Don't be fooled twice!",
+        "text_overlay": "NSRC 997 SEKARANG! LAPOR BANK & POLIS!",
+        "transition": "fade",
+        "background_music_mood": "action-oriented"
+      }
+    ],
+    "creative_notes": "The video aims for a fast-paced, urgent tone, grabbing attention within the first few seconds. Inspektor Amir's direct gaze and commanding voice will drive home the warning. Visuals will use red and yellow tones to enhance urgency, with quick cuts and impactful animations to illustrate the scam and the solution. The pacing is designed to deliver maximum information within the strict 30-second limit, ensuring clarity for a general audience, especially those less tech-savvy. The emotional arc moves from initial warning to explaining the threat, highlighting a clear red flag, and then providing actionable, immediate solutions.",
+    "primary_language": "English"
+  },
+  "director_status": "completed",
+  "linguistic_output": {
+    "project_id": "scam_other_2e5fad52",
+    "translations": {
+      "English": [
+        {
+          "scene_id": 1,
+          "audio_script": "AWAS! Have you been scammed before? Lost your hard-earned money?",
+          "text_overlay": "AWAS! SCAM RECOVERY BARU!"
+        },
+        {
+          "scene_id": 2,
+          "audio_script": "Scammers are now targeting victims again! They pretend to be 'recovery firms', promising to get your money back. But it's a trap!",
+          "text_overlay": "SCAMMER SASAR MANGSA LAGI! FAKE RECOVERY SERVICE!"
+        },
+        {
+          "scene_id": 3,
+          "audio_script": "RED FLAG! If they guarantee high success, or ask for upfront fees or your bank details to 'recover' funds, it's a scam! Official bodies NEVER ask for payment.",
+          "text_overlay": "JANGAN BAYAR UPFRONT! JANGAN BAGI BANK DETAILS!"
+        },
+        {
+          "scene_id": 4,
+          "audio_script": "If you're a victim of a fake recovery service, contact NSRC 997 immediately! Report to your bank and police. Protect yourself! Don't be fooled twice!",
+          "text_overlay": "NSRC 997 SEKARANG! LAPOR BANK & POLIS!"
+        }
+      ]
+    },
+    "cultural_adaptations": null
+  },
+  "linguistic_status": "completed",
+  "sensitivity_output": {
+    "project_id": "scam_other_2e5fad52",
+    "passed": true,
+    "flags": [
+      {
+        "severity": "warning",
+        "issue_type": "victim_blaming",
+        "description": "The phrase 'Don't be fooled twice!' while likely intended to empower and warn against re-victimization, could be subtly interpreted as implying fault or carelessness on the part of the victim for the initial scam. This might slightly undermine the empathetic and supportive tone.",
+        "scene_id": 4,
+        "suggested_fix": "Consider rephrasing to focus on future vigilance and protection without implying past fault. For example: 'Stay vigilant and protect yourself!', 'Learn from this experience and secure your future!', or simply 'Protect yourself!'.",
+        "regulation_reference": "Additional Considerations: VICTIM-BLAMING"
+      }
+    ],
+    "compliance_summary": "The anti-scam video script generally adheres well to the Malaysian compliance framework, demonstrating strong 3R compliance and appropriate Malaysian context. The tone is largely empathetic and educational. A minor 'warning' flag has been raised regarding the phrase 'Don't be fooled twice!' which, despite good intentions, could be subtly interpreted as victim-blaming. A slight rephrasing of this specific line would enhance victim sensitivity to the highest possible standard, aligning perfectly with the 'better to flag than miss' principle.",
+    "detailed_analysis": [
+      {
+        "category": "3R Compliance (Race)",
+        "status": "passed",
+        "analysis": "The script was reviewed for any content that demeans, stereotypes, or makes generalizations about any racial or ethnic group. No such references were found in the dialogue, text overlays, or character descriptions (Inspektor Amir is a generic authority figure without specific ethnic markers). The language used is neutral and inclusive.",
+        "elements_reviewed": [
+          "master_script content",
+          "audio_script in all scenes",
+          "text_overlay in all scenes",
+          "character representations (Inspektor Amir)"
+        ]
+      },
+      {
+        "category": "3R Compliance (Religion)",
+        "status": "passed",
+        "analysis": "The script was checked for any insults, misrepresentations, or potentially offensive references to any religion. No religious terms, symbols, practices, or beliefs were mentioned or alluded to in the script, visuals, or audio. The content remains secular and universally applicable.",
+        "elements_reviewed": [
+          "dialogue content",
+          "visual settings (implied from prompts)",
+          "cultural references"
+        ]
+      },
+      {
+        "category": "3R Compliance (Royalty)",
+        "status": "passed",
+        "analysis": "The script was examined for any content that shows disrespect to the Malaysian monarchy (Yang di-Pertuan Agong, Sultans) or questions constitutional provisions related to them. The script makes no direct or indirect references to royalty or specific governmental provisions. References to 'official bodies', 'bank', and 'police' are generic and appropriate for reporting scams, showing due respect to established institutions.",
+        "elements_reviewed": [
+          "authority references ('Official bodies', 'bank', 'police')",
+          "institutional mentions"
+        ]
+      },
+      {
+        "category": "Victim Sensitivity",
+        "status": "warning",
+        "analysis": "The overall tone of the script is empathetic and supportive, aiming to inform and protect potential victims. Phrases like 'Lost your hard-earned money?' convey understanding. However, the concluding phrase 'Don't be fooled twice!' in Scene 4, while intended to encourage vigilance, carries a slight implication of past fault or naivety. This could be perceived as subtly victim-blaming, even if not intended.",
+        "elements_reviewed": [
+          "victim portrayal ('victims', 'mangsas')",
+          "tone of messaging (urgent, protective)",
+          "empathetic language used ('hard-earned money')",
+          "specific phrase 'Don't be fooled twice!'"
+        ]
+      },
+      {
+        "category": "Group Stereotyping",
+        "status": "passed",
+        "analysis": "The script was reviewed for any stereotyping based on ethnicity, age, or socioeconomic status. No content implies that certain groups are more likely to be scammers or victims. The language avoids ageist remarks (e.g., demeaning elderly for tech-savviness) and classist content (e.g., mocking people for financial vulnerability). The focus is on the scam mechanism itself, not the demographics of those involved.",
+        "elements_reviewed": [
+          "demographic representations (generic 'victims', 'scammers')",
+          "scammer portrayal (generic 'they')",
+          "target audience messaging"
+        ]
+      },
+      {
+        "category": "Malaysian Context",
+        "status": "passed",
+        "analysis": "The script demonstrates appropriate respect for local authorities and institutions. The reference to 'NSRC 997' is accurate for the Malaysian context as the National Scam Response Centre helpline. Instructions to report to 'bank and police' are standard and correct procedures in Malaysia. The use of 'AWAS!' (Malay for 'Beware!') in both audio and text overlay enhances cultural relevance and immediate attention.",
+        "elements_reviewed": [
+          "authority references (NSRC 997, bank, police)",
+          "cultural appropriateness (use of 'AWAS!')",
+          "institutional accuracy"
+        ]
+      }
+    ],
+    "checked_against": [
+      "MCMC Guidelines",
+      "Sedition Act 1948",
+      "3R Policy"
+    ]
+  },
+  "sensitivity_status": "completed",
+  "video_package": {
+    "session_id": "2e5fad52-4f2a-4d7b-8d11-150b288224eb",
+    "scam_report": {
+      "title": "Fraudulent Fund Recovery Scam",
+      "category": "Other",
+      "severity": "medium",
+      "description": "Victims who have already lost money to scams are targeted by fraudsters posing as 'anti-scam firms' or legal experts. These scammers promise to help recover lost funds with unusually high success rates, often demanding upfront fees or personal banking details, only to defraud the victim of even more money. Auto-verified for generation",
+      "story_hook": "Victims who have already lost money to scams are targeted by fraudsters posing as 'anti-scam firms' or legal experts. These scammers promise to help recover lost funds with unusually high success rates, often demanding upfront fees or personal banking details, only to defraud the victim of even more money.",
+      "red_flag": "Be immediately suspicious of any individual or organisation that guarantees or promises unusually high success rates for recovering lost scam funds, especially if they request upfront payments, processing fees, or sensitive personal and banking information.",
+      "the_fix": "If you suspect you have fallen victim to a fraudulent recovery service, immediately contact the National Scam Response Centre (NSRC) hotline at 997. Also, report the incident to your bank and file a police report at the nearest police station as soon as possible. Remember, official bodies like PDRM and NSRC do not use private channels or request payments for investigations or fund recovery.",
+      "source_urls": [
+        "https://www.scmp.com/news/asia/southeast-asia/article/3336558/malaysian-woman-loses-us293000-after-hiring-anti-scam-firm-recoup-us366",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF0wlYGNixGiC_t-GtYBr_o-stFvKDLWDovu72eisbWyCX2k7I65Fq9GrX1e6S3p4qxN7cOPozIZA_MU7RRL6GKnN1Z19FMKMcJ68or4M2nqtfMkUBozKgMxu0M-k4D4Gt4TrrKaDxoKw==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGZgg40p-sYL8Gxk_LfVrXEb9NQko2FGlG8yYHhKh_7I_6dMEWRamuP7s8GyAF8gkDRfsPkvh1EJjHaEmUahFy0En92ryiZPb-usf4KttU2gD0EQv_hceiVcg3JTfSOrQna1_iKZ1-bZNMZO3O8T9od9THsOdpyEdjg9Ktav9g-hiCVYPilscyNwF7_4Ud1o2hsBDy-IUMUBHCts4E7NkE2",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGH-MIK954W_FgVpXgaYA_nv5uS9L8srGOuXSDsYSJuw2lW0m0AoNjwB3VKkXjHZPoyn7ye39m-grpYuzJOlEf8U6jLeylfa90yOrsxOtQuYXKK8P8gcictw5jwaUckhgxHN1xGZVtZ39ah39w3RmHKcFyRcmz3fnoINU4gdUu5T77lE6kDOjqw3X7x-0C6ZZKZISN6olQeBQMOIUOk7599oHVTAp65fGBtEcB3aGBhyze1rTvzLg==",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEOwf2g-qGbV7UuTzmnf8G8tYg1fgBUfNddO4_tA_lNmfuLzvFL_W10DqqBQ96oj-aFoqjRYp0AG-i1PmtVXU0S1Oo7vLi9UQQW0DJzdfBpduWDvPJa3qXl8N7NjgCaT0f4Soy9dX0p07uF",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG3sNnIWlGrC3U47nlYmNitqTby0hCi6vjkmXF3alt7liUviRRqw8xKS19MK6VcMnTy7OFAu_8XMEq_oScy33O_apS-zo3BNLaNS1gZ8jFR_AXrRhzxlhd3Txt0fwYYj_s-Q-iW6J2AzR4=",
+        "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF8hJL4wXSa1dfTV6ob9-tENKQG6XziAU4UKg9SfzQZndEROSEbDRMvLuv8flWrpPbSWNKvj7v5QwrNdIlXv9WVrH27Ws3DcMnVowi0dmSZds6GJSJ4TspYzUOT_LQPPfXZVnZ5wTyM5snQm34uH8jwiNougMnP5nEIRZ-gpUKUQ_ye11zNNzl9ff-V5Huz432NinYbUDM6GXGyef6ZVWnOLTA1IPqTF2Y="
+      ],
+      "victims_profile": null,
+      "financial_impact": null
+    },
+    "creator_config": {
+      "target_groups": [
+        "General Public"
+      ],
+      "languages": [
+        "English"
+      ],
+      "tone": "Urgent/Warning",
+      "avatar": {
+        "id": "officer_malay_male_01",
+        "name": "Inspektor Amir",
+        "rank": "Inspektor",
+        "gender": "male",
+        "ethnicity": "malay"
+      },
+      "video_duration_seconds": null,
+      "video_format": "reel",
+      "director_instructions": null
+    },
+    "video_inputs": {
+      "en": {
+        "project_id": "scam_other_2e5fad52_en",
+        "meta_data": {
+          "language": "English",
+          "target_audience": "General Public",
+          "tone": "Urgent/Warning",
+          "avatar": "officer_malay_male_01",
+          "video_format": "reel",
+          "total_duration_seconds": 30
+        },
+        "scenes": [
+          {
+            "scene_id": 1,
+            "duration_est_seconds": 6,
+            "visual_prompt": "{primary_avatar_id} (Inspektor Amir) appears with a concerned expression, then quickly becomes stern, looking directly at the camera. Flashing text 'SCAMMED?' appears and disappears rapidly. Background shifts from dark to urgent red.",
+            "audio_script": "AWAS! Have you been scammed before? Lost your hard-earned money?",
+            "text_overlay": "AWAS! SCAM RECOVERY BARU!",
+            "transition": "cut",
+            "background_music_mood": "tense"
+          },
+          {
+            "scene_id": 2,
+            "duration_est_seconds": 8,
+            "visual_prompt": "{primary_avatar_id} points decisively towards the side. An animated sequence shows a silhouette of a person losing money, then a fake 'recovery service' logo appears with a promise, followed by more money disappearing from the person. A digital 'trap' graphic flashes.",
+            "audio_script": "Scammers are now targeting victims again! They pretend to be 'recovery firms', promising to get your money back. But it's a trap!",
+            "text_overlay": "SCAMMER SASAR MANGSA LAGI! FAKE RECOVERY SERVICE!",
+            "transition": "cut",
+            "background_music_mood": "suspenseful"
+          },
+          {
+            "scene_id": 3,
+            "duration_est_seconds": 8,
+            "visual_prompt": "{primary_avatar_id} holds up a hand, shaking his head firmly with a serious expression. A bold, red 'X' appears over graphics of a money bag (representing upfront fees) and a credit card/bank details icon. Text 'Official bodies NEVER ask for payment' appears strongly.",
+            "audio_script": "RED FLAG! If they guarantee high success, or ask for upfront fees or your bank details to 'recover' funds, it's a scam! Official bodies NEVER ask for payment.",
+            "text_overlay": "JANGAN BAYAR UPFRONT! JANGAN BAGI BANK DETAILS!",
+            "transition": "cut",
+            "background_music_mood": "urgent"
+          },
+          {
+            "scene_id": 4,
+            "duration_est_seconds": 8,
+            "visual_prompt": "{primary_avatar_id} points to a clear, large display of 'NSRC 997'. Icons for a bank and a police station appear next to the number. {primary_avatar_id} finishes with a direct, commanding, yet reassuring look. Background shifts to a more neutral but still urgent color.",
+            "audio_script": "If you're a victim of a fake recovery service, contact NSRC 997 immediately! Report to your bank and police. Protect yourself! Don't be fooled twice!",
+            "text_overlay": "NSRC 997 SEKARANG! LAPOR BANK & POLIS!",
+            "transition": "fade",
+            "background_music_mood": "action-oriented"
+          }
+        ],
+        "fact_sheet_reference": {
+          "scam_name": "Fraudulent Fund Recovery Scam",
+          "story_hook": "Victims who have already lost money to scams are targeted by fraudsters posing as 'anti-scam firms' or legal experts. These scammers promise to help recover lost funds with unusually high success rates, often demanding upfront fees or personal banking details, only to defraud the victim of even more money.",
+          "red_flag": "Be immediately suspicious of any individual or organisation that guarantees or promises unusually high success rates for recovering lost scam funds, especially if they request upfront payments, processing fees, or sensitive personal and banking information.",
+          "the_fix": "If you suspect you have fallen victim to a fraudulent recovery service, immediately contact the National Scam Response Centre (NSRC) hotline at 997. Also, report the incident to your bank and file a police report at the nearest police station as soon as possible. Remember, official bodies like PDRM and NSRC do not use private channels or request payments for investigations or fund recovery.",
+          "reference_sources": [
+            "https://www.scmp.com/news/asia/southeast-asia/article/3336558/malaysian-woman-loses-us293000-after-hiring-anti-scam-firm-recoup-us366",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF0wlYGNixGiC_t-GtYBr_o-stFvKDLWDovu72eisbWyCX2k7I65Fq9GrX1e6S3p4qxN7cOPozIZA_MU7RRL6GKnN1Z19FMKMcJ68or4M2nqtfMkUBozKgMxu0M-k4D4Gt4TrrKaDxoKw==",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGZgg40p-sYL8Gxk_LfVrXEb9NQko2FGlG8yYHhKh_7I_6dMEWRamuP7s8GyAF8gkDRfsPkvh1EJjHaEmUahFy0En92ryiZPb-usf4KttU2gD0EQv_hceiVcg3JTfSOrQna1_iKZ1-bZNMZO3O8T9od9THsOdpyEdjg9Ktav9g-hiCVYPilscyNwF7_4Ud1o2hsBDy-IUMUBHCts4E7NkE2",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGH-MIK954W_FgVpXgaYA_nv5uS9L8srGOuXSDsYSJuw2lW0m0AoNjwB3VKkXjHZPoyn7ye39m-grpYuzJOlEf8U6jLeylfa90yOrsxOtQuYXKK8P8gcictw5jwaUckhgxHN1xGZVtZ39ah39w3RmHKcFyRcmz3fnoINU4gdUu5T77lE6kDOjqw3X7x-0C6ZZKZISN6olQeBQMOIUOk7599oHVTAp65fGBtEcB3aGBhyze1rTvzLg==",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQEOwf2g-qGbV7UuTzmnf8G8tYg1fgBUfNddO4_tA_lNmfuLzvFL_W10DqqBQ96oj-aFoqjRYp0AG-i1PmtVXU0S1Oo7vLi9UQQW0DJzdfBpduWDvPJa3qXl8N7NjgCaT0f4Soy9dX0p07uF",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQG3sNnIWlGrC3U47nlYmNitqTby0hCi6vjkmXF3alt7liUviRRqw8xKS19MK6VcMnTy7OFAu_8XMEq_oScy33O_apS-zo3BNLaNS1gZ8jFR_AXrRhzxlhd3Txt0fwYYj_s-Q-iW6J2AzR4=",
+            "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQF8hJL4wXSa1dfTV6ob9-tENKQG6XziAU4UKg9SfzQZndEROSEbDRMvLuv8flWrpPbSWNKvj7v5QwrNdIlXv9WVrH27Ws3DcMnVowi0dmSZds6GJSJ4TspYzUOT_LQPPfXZVnZ5wTyM5snQm34uH8jwiNougMnP5nEIRZ-gpUKUQ_ye11zNNzl9ff-V5Huz432NinYbUDM6GXGyef6ZVWnOLTA1IPqTF2Y="
+          ],
+          "category": "Other",
+          "verified_by_officer": true,
+          "verification_timestamp": "2026-03-13T10:29:26.837992",
+          "officer_notes": "Auto-verified for generation",
+          "global_ancestry": null,
+          "psychological_exploit": null,
+          "victim_profile": null,
+          "counter_hack": null
+        },
+        "sensitivity_cleared": true
+      }
+    },
+    "sensitivity_report": {
+      "project_id": "scam_other_2e5fad52",
+      "passed": true,
+      "flags": [
+        {
+          "severity": "warning",
+          "issue_type": "victim_blaming",
+          "description": "The phrase 'Don't be fooled twice!' while likely intended to empower and warn against re-victimization, could be subtly interpreted as implying fault or carelessness on the part of the victim for the initial scam. This might slightly undermine the empathetic and supportive tone.",
+          "scene_id": 4,
+          "suggested_fix": "Consider rephrasing to focus on future vigilance and protection without implying past fault. For example: 'Stay vigilant and protect yourself!', 'Learn from this experience and secure your future!', or simply 'Protect yourself!'.",
+          "regulation_reference": "Additional Considerations: VICTIM-BLAMING"
+        }
+      ],
+      "compliance_summary": "The anti-scam video script generally adheres well to the Malaysian compliance framework, demonstrating strong 3R compliance and appropriate Malaysian context. The tone is largely empathetic and educational. A minor 'warning' flag has been raised regarding the phrase 'Don't be fooled twice!' which, despite good intentions, could be subtly interpreted as victim-blaming. A slight rephrasing of this specific line would enhance victim sensitivity to the highest possible standard, aligning perfectly with the 'better to flag than miss' principle.",
+      "detailed_analysis": [
+        {
+          "category": "3R Compliance (Race)",
+          "status": "passed",
+          "analysis": "The script was reviewed for any content that demeans, stereotypes, or makes generalizations about any racial or ethnic group. No such references were found in the dialogue, text overlays, or character descriptions (Inspektor Amir is a generic authority figure without specific ethnic markers). The language used is neutral and inclusive.",
+          "elements_reviewed": [
+            "master_script content",
+            "audio_script in all scenes",
+            "text_overlay in all scenes",
+            "character representations (Inspektor Amir)"
+          ]
+        },
+        {
+          "category": "3R Compliance (Religion)",
+          "status": "passed",
+          "analysis": "The script was checked for any insults, misrepresentations, or potentially offensive references to any religion. No religious terms, symbols, practices, or beliefs were mentioned or alluded to in the script, visuals, or audio. The content remains secular and universally applicable.",
+          "elements_reviewed": [
+            "dialogue content",
+            "visual settings (implied from prompts)",
+            "cultural references"
+          ]
+        },
+        {
+          "category": "3R Compliance (Royalty)",
+          "status": "passed",
+          "analysis": "The script was examined for any content that shows disrespect to the Malaysian monarchy (Yang di-Pertuan Agong, Sultans) or questions constitutional provisions related to them. The script makes no direct or indirect references to royalty or specific governmental provisions. References to 'official bodies', 'bank', and 'police' are generic and appropriate for reporting scams, showing due respect to established institutions.",
+          "elements_reviewed": [
+            "authority references ('Official bodies', 'bank', 'police')",
+            "institutional mentions"
+          ]
+        },
+        {
+          "category": "Victim Sensitivity",
+          "status": "warning",
+          "analysis": "The overall tone of the script is empathetic and supportive, aiming to inform and protect potential victims. Phrases like 'Lost your hard-earned money?' convey understanding. However, the concluding phrase 'Don't be fooled twice!' in Scene 4, while intended to encourage vigilance, carries a slight implication of past fault or naivety. This could be perceived as subtly victim-blaming, even if not intended.",
+          "elements_reviewed": [
+            "victim portrayal ('victims', 'mangsas')",
+            "tone of messaging (urgent, protective)",
+            "empathetic language used ('hard-earned money')",
+            "specific phrase 'Don't be fooled twice!'"
+          ]
+        },
+        {
+          "category": "Group Stereotyping",
+          "status": "passed",
+          "analysis": "The script was reviewed for any stereotyping based on ethnicity, age, or socioeconomic status. No content implies that certain groups are more likely to be scammers or victims. The language avoids ageist remarks (e.g., demeaning elderly for tech-savviness) and classist content (e.g., mocking people for financial vulnerability). The focus is on the scam mechanism itself, not the demographics of those involved.",
+          "elements_reviewed": [
+            "demographic representations (generic 'victims', 'scammers')",
+            "scammer portrayal (generic 'they')",
+            "target audience messaging"
+          ]
+        },
+        {
+          "category": "Malaysian Context",
+          "status": "passed",
+          "analysis": "The script demonstrates appropriate respect for local authorities and institutions. The reference to 'NSRC 997' is accurate for the Malaysian context as the National Scam Response Centre helpline. Instructions to report to 'bank and police' are standard and correct procedures in Malaysia. The use of 'AWAS!' (Malay for 'Beware!') in both audio and text overlay enhances cultural relevance and immediate attention.",
+          "elements_reviewed": [
+            "authority references (NSRC 997, bank, police)",
+            "cultural appropriateness (use of 'AWAS!')",
+            "institutional accuracy"
+          ]
+        }
+      ],
+      "checked_against": [
+        "MCMC Guidelines",
+        "Sedition Act 1948",
+        "3R Policy"
+      ]
+    },
+    "created_at": "2026-03-13T10:29:58.257860"
+  },
+  "visual_audio": {
+    "obfuscated_story": {
+      "title": "The Double Blow: Beware of Fraudulent Fund Recovery Scams",
+      "summary": "Victims who have already lost money to initial scams are being targeted a second time by fraudsters posing as legal recovery experts. These scammers promise to retrieve lost funds in exchange for upfront fees and personal data, only to disappear with more of the victim's money.",
+      "story": "After losing RM50,000 in a fraudulent investment scheme, a victim is contacted on social media by an individual claiming to be a 'Senior Recovery Consultant' from a prestigious-sounding legal firm. The consultant claims they have special access to the banking backend and can track the stolen funds through international servers. They guarantee a 95% success rate, preying on the victim's desperation to recover their savings. The scammer sends a series of forged legal documents and fake testimonials from other 'successful' clients to build trust. Once the victim is hooked, the consultant demands an 'administrative processing fee' of RM3,000 to initiate the recovery process. Thinking this is their only chance, the victim pays the fee. Shortly after, the scammer requests the victim's online banking credentials, claiming they need to 'verify' the incoming recovered funds. Using this information, the scammer clears out the victim's remaining balance. The victim realizes too late that they have been scammed twice when the consultant's profile vanishes and the phone number goes dead.",
+      "character_roles": [
+        "A victim seeking fund recovery",
+        "A fraudulent recovery consultant",
+        "A fake legal advisor",
+        "Inspektor Amir (Law Enforcement Narrator)"
+      ],
+      "solution": "If you suspect you have fallen victim to a fraudulent recovery service, immediately contact the National Scam Response Centre (NSRC) at 997. Additionally, report the incident to your bank's fraud hotline and file an official report at the nearest PDRM station. Do not share your banking credentials or pay upfront fees to private entities claiming to recover funds.",
+      "red_flags": [
+        "Guarantees or promises of unusually high success rates for recovering lost scam funds",
+        "Requests for upfront payments, legal fees, or administrative charges to start a recovery process",
+        "Demands for sensitive personal data or online banking login credentials",
+        "Communications through private messaging apps or unofficial social media profiles claiming to represent official bodies"
+      ]
+    },
+    "veo_script": {
+      "title": "The Double Blow: Beware of Fraudulent Fund Recovery Scams",
+      "total_duration_sec": 32,
+      "segments": [
+        {
+          "segment_index": 1,
+          "characters_involved": [
+            "Inspektor Amir (Law Enforcement Narrator)"
+          ],
+          "veo_prompt": "(1) Inspektor Amir stands in a sleek, high-tech police command center, looking directly at the camera with a stern, authoritative expression as digital warning symbols flicker on screens behind him. (2) Camera: Medium shot, slight slow-motion zoom-in. (3) Lighting: Moody blue atmospheric lighting with sudden pulses of urgent red light. (4) Audio: Sound of a sharp digital alert. Dialogue: 'AWAS! Have you been scammed before? Lost your hard-earned money? Watch out for the second trap!' (5) Visual style: Cinematic, sharp detail, high-contrast professional video."
+        },
+        {
+          "segment_index": 2,
+          "characters_involved": [
+            "A victim seeking fund recovery",
+            "A fraudulent recovery consultant"
+          ],
+          "veo_prompt": "(1) A distressed victim sits at a desk looking at a smartphone where a fraudulent consultant, wearing a sharp suit, points to a fake legal certificate and gestures promisingly. (2) Camera: Over-the-shoulder shot of the victim, shifting focus to the consultant's face on the screen. (3) Lighting: Dim indoor lighting contrasted with the harsh, cold blue glow from the smartphone screen. (4) Audio: Background suspenseful hum. Dialogue: 'I am a Senior Recovery Consultant. I guarantee we can track your fifty thousand ringgit back to the source.' (5) Visual style: Realistic, gritty, slightly desaturated tones."
+        },
+        {
+          "segment_index": 3,
+          "characters_involved": [
+            "A fake legal advisor",
+            "Inspektor Amir (Law Enforcement Narrator)"
+          ],
+          "veo_prompt": "(1) A fake legal advisor slides a forged document toward the camera; cut to Inspektor Amir holding up a firm hand in a 'stop' gesture, shaking his head. (2) Camera: Close-up on the document, then a low-angle shot of Amir looking powerful. (3) Lighting: High-contrast shadows on the advisor, bright and clear clinical light on Amir. (4) Audio: Sound of paper sliding. Dialogue: 'RED FLAG! Guarantees and upfront fees are the signs of a scam. Official bodies NEVER ask for payment!' (5) Visual style: High-tension dramatic thriller aesthetic."
+        },
+        {
+          "segment_index": 4,
+          "characters_involved": [
+            "A victim seeking fund recovery",
+            "Inspektor Amir (Law Enforcement Narrator)"
+          ],
+          "veo_prompt": "(1) The victim dials 997 on their phone with a look of relief while Inspektor Amir stands beside a large illuminated display of the NSRC 997 logo. (2) Camera: Wide shot panning from the victim to the 997 graphic, finishing with Amir's reassuring nod. (3) Lighting: Bright, clean, professional lighting signifying safety and resolution. (4) Audio: Upbeat, action-oriented music. Dialogue: 'Contact NSRC 997 immediately. Report to your bank. Don't be fooled twice!' (5) Visual style: Clean, modern, high-definition broadcast style."
+        }
+      ]
+    },
+    "character_descriptions": {
+      "characters": [
+        {
+          "role": "A victim seeking fund recovery",
+          "type": "person",
+          "description_for_image_generation": "FULL BODY figure of a middle-aged Malaysian man, wearing a plain button-down light blue shirt and dark grey slacks. He has short black hair and a weary, tired appearance. Head to toe view."
+        },
+        {
+          "role": "A fraudulent recovery consultant",
+          "type": "scammer",
+          "description_for_image_generation": "FULL BODY anonymous human figure, a featureless charcoal grey silhouette wearing a translucent digital overlay of a sharp business suit with a glowing circuit board pattern on the chest."
+        },
+        {
+          "role": "A fake legal advisor",
+          "type": "scammer",
+          "description_for_image_generation": "FULL BODY human-like figure with a completely blank, smooth white robotic head and no facial features, wearing a dark navy blue professional blazer and black trousers. Head to toe view."
+        },
+        {
+          "role": "Inspektor Amir (Law Enforcement Narrator)",
+          "type": "person",
+          "description_for_image_generation": "FULL BODY figure of a Malaysian man in his late 30s, wearing a crisp dark blue Royal Malaysia Police uniform with a professional peaked cap, silver badges, and a black duty belt. Head to toe view."
+        }
+      ]
+    },
+    "character_ref_images": [
+      {
+        "role": "A victim seeking fund recovery",
+        "description": "FULL BODY figure of a middle-aged Malaysian man, wearing a plain button-down light blue shirt and dark grey slacks. He has short black hair and a weary, tired appearance. Head to toe view.",
+        "filename": "A_victim_seeking_fund_recovery_2x2_grid.png",
+        "path": "output\\scam_other_2e5fad52_en\\character_refs\\A_victim_seeking_fund_recovery_2x2_grid.png"
+      },
+      {
+        "role": "A fraudulent recovery consultant",
+        "description": "FULL BODY anonymous human figure, a featureless charcoal grey silhouette wearing a translucent digital overlay of a sharp business suit with a glowing circuit board pattern on the chest.",
+        "filename": "A_fraudulent_recovery_consultant_2x2_grid.png",
+        "path": "output\\scam_other_2e5fad52_en\\character_refs\\A_fraudulent_recovery_consultant_2x2_grid.png"
+      },
+      {
+        "role": "A fake legal advisor",
+        "description": "FULL BODY human-like figure with a completely blank, smooth white robotic head and no facial features, wearing a dark navy blue professional blazer and black trousers. Head to toe view.",
+        "filename": "A_fake_legal_advisor_2x2_grid.png",
+        "path": "output\\scam_other_2e5fad52_en\\character_refs\\A_fake_legal_advisor_2x2_grid.png"
+      },
+      {
+        "role": "Inspektor Amir (Law Enforcement Narrator)",
+        "description": "FULL BODY figure of a Malaysian man in his late 30s, wearing a crisp dark blue Royal Malaysia Police uniform with a professional peaked cap, silver badges, and a black duty belt. Head to toe view.",
+        "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+        "path": "output\\scam_other_2e5fad52_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+      }
+    ],
+    "clip_ref_prompts": [],
+    "clip_ref_images": [],
+    "veo_clips": [],
+    "output_dir": "output\\scam_other_2e5fad52_en"
+  },
+  "visual_audio_status": "in_progress",
+  "social_output": null,
+  "social_status": "pending",
+  "chat_history": {
+    "messages": []
+  },
+  "created_at": "2026-03-13T10:28:55.681177",
+  "updated_at": "2026-03-13T10:28:55.681177"
+}

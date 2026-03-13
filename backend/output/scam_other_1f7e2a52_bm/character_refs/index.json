@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Law Enforcement Narrator (Inspektor Amir)",
+    "description": "FULL BODY, head to toe. A 35-year-old Malaysian man with a short, neat military-style haircut. He is wearing a crisp, formal Royal Malaysia Police (PDRM) dark blue uniform with silver badges and shoulder rank insignia. He stands with a professional and authoritative posture, wearing polished black leather shoes.",
+    "filename": "Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_other_1f7e2a52_bm\\character_refs\\Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "The Vulnerable Victim",
+    "description": "FULL BODY, head to toe. A middle-aged Malaysian man in his late 40s. He has a worried expression and slightly messy short black hair. He is wearing a casual, everyday outfit consisting of a plain light-colored polo shirt, dark grey trousers, and brown leather sandals.",
+    "filename": "The_Vulnerable_Victim_2x2_grid.png",
+    "path": "output\\scam_other_1f7e2a52_bm\\character_refs\\The_Vulnerable_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake Legal Consultant (Scammer)",
+    "description": "FULL BODY, head to toe. A featureless human-shaped silhouette made of glowing circuit patterns. The figure is wearing a semi-transparent, holographic business suit to represent the fake professional persona. The entire form glows with a subtle, predatory digital violet light.",
+    "filename": "Fake_Legal_Consultant_Scammer_2x2_grid.png",
+    "path": "output\\scam_other_1f7e2a52_bm\\character_refs\\Fake_Legal_Consultant_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Fake Government Agency Representative",
+    "description": "FULL BODY, head to toe. An anonymous, featureless android-like figure with a smooth, metallic silver surface. The figure is styled with the outline of a formal blazer and tie etched into its metallic surface, representing a fake official. It has glowing red optics instead of eyes.",
+    "filename": "Fake_Government_Agency_Representative_2x2_grid.png",
+    "path": "output\\scam_other_1f7e2a52_bm\\character_refs\\Fake_Government_Agency_Representative_2x2_grid.png"
+  }
+]

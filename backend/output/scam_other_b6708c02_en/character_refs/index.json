@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Distraught Retiree",
+    "description": "FULL BODY. An elderly Malaysian man in his late 60s, wearing a simple patterned batik shirt and grey slacks. He has thinning grey hair and a slightly hunched posture, representing a retired professional.",
+    "filename": "Distraught_Retiree_2x2_grid.png",
+    "path": "output\\scam_other_b6708c02_en\\character_refs\\Distraught_Retiree_2x2_grid.png"
+  },
+  {
+    "role": "Fake Senior Recovery Consultant",
+    "description": "FULL BODY. A featureless human silhouette made of glowing blue circuit-board patterns, wearing a digital representation of a formal business suit to mimic a professional appearance.",
+    "filename": "Fake_Senior_Recovery_Consultant_2x2_grid.png",
+    "path": "output\\scam_other_b6708c02_en\\character_refs\\Fake_Senior_Recovery_Consultant_2x2_grid.png"
+  },
+  {
+    "role": "Inspektor Amir",
+    "description": "FULL BODY. A Malaysian male in his 30s, wearing the crisp dark blue uniform of the Royal Malaysia Police (PDRM) with visible silver badges and rank insignia. He has short, neat black hair and stands with a confident, authoritative posture.",
+    "filename": "Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_other_b6708c02_en\\character_refs\\Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "National Scam Response Centre Officer",
+    "description": "FULL BODY. A Malaysian woman in her late 20s wearing a professional white button-down shirt, black trousers, and a black hijab. She is wearing a headset and a lanyard with a clear identification card.",
+    "filename": "National_Scam_Response_Centre_Officer_2x2_grid.png",
+    "path": "output\\scam_other_b6708c02_en\\character_refs\\National_Scam_Response_Centre_Officer_2x2_grid.png"
+  }
+]

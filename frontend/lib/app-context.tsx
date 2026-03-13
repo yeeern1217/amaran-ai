@@ -156,7 +156,7 @@ const defaultConfig: ConfigData = {
   language: "english",
   targetAudience: "general",
   tone: "urgent",
-  videoFormat: "reels",
+  videoFormat: "reel",
   videoLength: "90s",
 }
 

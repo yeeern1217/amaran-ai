@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useApp } from "@/lib/app-context"
 import { generateVideoAssets } from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -18,8 +18,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Volume2,
-  Loader2,
   Video,
+  Loader2,
+  XCircle,
+  RotateCcw,
 } from "lucide-react"
 
 export function PageClips() {
@@ -29,51 +31,61 @@ export function PageClips() {
     config,
     visualAudioState,
     setVisualAudioState,
+    visualAudioStatus,
+    setVisualAudioStatus,
     setCurrentStep,
   } = useApp()
   const [activeClip, setActiveClip] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
-
-  // Video generation loading state
-  const [isGenerating, setIsGenerating] = useState(false)
   const hasAutoStarted = useRef(false)
 
-  const effectiveState = visualAudioState
-  const clips = effectiveState?.veo_clips ?? []
+  const clips = visualAudioState?.veo_clips ?? []
   const totalDuration = scenes.reduce((sum, s) => sum + (s.duration || 8), 0)
 
-  // Auto-start generation when entering the page
-  useEffect(() => {
-    if (!sessionId || hasAutoStarted.current || visualAudioState) return
-    hasAutoStarted.current = true
+  const langMap: Record<string, string> = {
+    english: "en",
+    malay: "bm",
+    mandarin: "zh",
+    chinese: "zh",
+    tamil: "ta",
+  }
+  const languageCode = langMap[config.language] || "en"
 
-    async function runGeneration() {
-      setIsGenerating(true)
-
-      // Determine language code
-      const langMap: Record<string, string> = {
-        english: "en",
-        malay: "bm",
-        chinese: "zh",
-        tamil: "ta",
-      }
-      const languageCode = langMap[config.language] || "en"
-
-      try {
-        const result = await generateVideoAssets(sessionId!, languageCode)
-        if (result.visual_audio_state) {
-          setVisualAudioState(result.visual_audio_state)
+  // Auto-generate video assets if not yet done
+  const runFullPipeline = useCallback(async () => {
+    if (!sessionId) return
+    setVisualAudioStatus("running")
+    setError(null)
+    try {
+      const result = await generateVideoAssets(sessionId, languageCode)
+      if (result.visual_audio_state) {
+        setVisualAudioState(result.visual_audio_state)
+        const generatedClips = result.visual_audio_state.veo_clips ?? []
+        if (generatedClips.length > 0) {
+          setVisualAudioStatus("completed")
+        } else {
+          setError("Video clip generation returned no clips. You can retry.")
+          setVisualAudioStatus("error")
         }
-      } catch (err) {
-        console.error("Video generation error:", err)
-      } finally {
-        setIsGenerating(false)
+      } else {
+        setError("No pipeline state returned from backend.")
+        setVisualAudioStatus("error")
       }
+    } catch (err) {
+      console.error("Video assets generation error:", err)
+      setError(err instanceof Error ? err.message : "Failed to generate video assets")
+      setVisualAudioStatus("error")
     }
+  }, [sessionId, languageCode, setVisualAudioState, setVisualAudioStatus])
 
-    runGeneration()
-  }, [sessionId, visualAudioState, config.language, setVisualAudioState])
+  useEffect(() => {
+    if (sessionId && visualAudioStatus === "idle" && !hasAutoStarted.current) {
+      hasAutoStarted.current = true
+      runFullPipeline()
+    }
+  }, [sessionId, visualAudioStatus, runFullPipeline])
 
   // When switching clips, reset playback state
   useEffect(() => {
@@ -102,49 +114,74 @@ export function PageClips() {
     }
   }
 
-  // Get clip video source
+  // Get clip video source — prefer base64 data URI for browser playback
   function getClipSrc(clipIndex: number): string | null {
     const clip = clips[clipIndex]
     if (!clip) return null
+    if (clip.video_base64) return clip.video_base64
+    if (clip.video_uri) return clip.video_uri
     if (clip.video_path?.startsWith("/")) return clip.video_path
     return null
   }
 
-  // Map clip to scene description (clips are 1-indexed via segment_id, scenes are 0-indexed)
+  // Map clip to scene description (clips use segment_index, scenes are 0-indexed)
   function getSceneForClip(clipIndex: number) {
     const clip = clips[clipIndex]
     if (!clip) return scenes[clipIndex] ?? null
-    // Match by segment_id to scene_id
-    const matched = scenes.find((s) => s.id === clip.segment_id)
+    const segIdx = clip.segment_index ?? clip.segment_id
+    const matched = scenes.find((s) => s.id === segIdx)
     return matched ?? scenes[clipIndex] ?? null
   }
 
   const currentScene = getSceneForClip(activeClip)
   const currentClipSrc = getClipSrc(activeClip)
 
-  // Render generation loading screen
-  if (isGenerating) {
+  const isRunning = visualAudioStatus === "running"
+  const isError = visualAudioStatus === "error"
+
+  // Loading / generating state
+  if (isRunning && clips.length === 0) {
     return (
       <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="size-20 rounded-full flex items-center justify-center bg-teal-500/20 animate-pulse">
-              <Video className="size-10 text-teal-400" />
-            </div>
-            <div className="absolute inset-0 rounded-full pulse-ring" />
+          <div className="size-20 rounded-full flex items-center justify-center bg-purple-500/20 animate-pulse">
+            <Loader2 className="size-10 text-purple-500 animate-spin" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground tracking-tight">
-            Generating Video...
-          </h2>
+          <h2 className="text-xl font-semibold text-foreground">Generating Video Clips...</h2>
           <p className="text-muted-foreground text-sm text-center max-w-md">
-            AI is generating video clips from your scenes. This may take a moment.
+            Building visual assets and rendering video clips from your approved script. This may take a few minutes.
           </p>
         </div>
       </div>
     )
   }
 
-  // If no clips available, show placeholder
+  // Error state
+  if (isError && clips.length === 0) {
+    return (
+      <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <XCircle className="size-10 text-red-400" />
+          <h2 className="text-xl font-semibold text-foreground">Generation Failed</h2>
+          <p className="text-muted-foreground text-sm text-center max-w-md">
+            {error || "Failed to generate video clips."}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setCurrentStep(4)} size="sm">
+              <ArrowLeft className="size-4" />
+              Back to Preview
+            </Button>
+            <Button onClick={() => { hasAutoStarted.current = false; setVisualAudioStatus("idle") }} size="sm">
+              <RotateCcw className="size-4" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // If no clips available and not loading, show placeholder
   if (clips.length === 0) {
     return (
       <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full items-center justify-center min-h-[400px]">
@@ -152,7 +189,7 @@ export function PageClips() {
           <Film className="size-10 text-muted-foreground" />
           <h2 className="text-xl font-semibold text-foreground">No Video Clips Available</h2>
           <p className="text-muted-foreground text-sm text-center max-w-md">
-            Video clips have not been generated yet. Complete the Production step first.
+            Video clips have not been generated yet. Go back to Preview and proceed again.
           </p>
           <Button variant="outline" onClick={() => setCurrentStep(4)} size="sm">
             <ArrowLeft className="size-4" />

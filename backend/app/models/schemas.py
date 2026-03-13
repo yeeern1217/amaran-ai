@@ -41,6 +41,7 @@ from typing import List, Optional, Literal, Dict, Any
 from enum import Enum
 from datetime import datetime
 import uuid
+from pydantic import field_validator
 
 
 # ==================== Enums ====================
@@ -164,6 +165,18 @@ class FactSheet(BaseModel):
     reference_sources: List[str] = Field(default_factory=list, description="URLs/sources for verification")
     category: ScamCategory
     verified_by_officer: bool = Field(default=False, description="Officer must verify before proceeding")
+
+    @field_validator('category', mode='before')
+    @classmethod
+    def coerce_category(cls, v):
+        if isinstance(v, ScamCategory):
+            return v
+        if isinstance(v, str):
+            try:
+                return ScamCategory(v)
+            except ValueError:
+                return ScamCategory.OTHER
+        return v
     verification_timestamp: Optional[datetime] = Field(None)
     officer_notes: Optional[str] = Field(None, description="Officer corrections or additions")
     # Deep Research Insights (populated only when Deep Research mode is active)
@@ -231,9 +244,10 @@ TRUSTED_AVATARS = [
 
 # Video format constraints
 VIDEO_FORMAT_CONSTRAINTS = {
-    "reel": {"max_duration": 30, "default_duration": 30},   # Instagram/TikTok Reels
-    "story": {"max_duration": 15, "default_duration": 15},  # Stories
-    "post": {"max_duration": 60, "default_duration": 60},   # Regular posts
+    "reel": {"max_duration": 90, "default_duration": 30},         # Instagram/TikTok Reels (up to 90s)
+    "story": {"max_duration": 15, "default_duration": 15},       # Stories
+    "post": {"max_duration": 180, "default_duration": 60},       # Regular posts
+    "landscape": {"max_duration": 180, "default_duration": 60},  # Landscape 16:9
 }
 
 # Veo 3 constraint: max 8 seconds per scene
@@ -249,8 +263,8 @@ class CreatorConfig(BaseModel):
     languages: List[Language] = Field(..., min_length=1, description="Generate versions for these languages")
     tone: Tone
     avatar: AvatarConfig
-    video_duration_seconds: Optional[int] = Field(None, ge=8, le=60, description="Auto-set based on format if not provided")
-    video_format: Literal["reel", "story", "post"] = Field("reel")
+    video_duration_seconds: Optional[int] = Field(None, ge=8, le=180, description="Auto-set based on format if not provided")
+    video_format: Literal["reel", "story", "post", "landscape"] = Field("reel")
     director_instructions: Optional[str] = Field(None, description="Custom instructions for Director Agent")
     
     def get_duration(self) -> int:
@@ -272,6 +286,7 @@ class DirectorOutput(BaseModel):
     scene_breakdown: List[Dict[str, Any]] = Field(..., description="Scene structure with timing")
     creative_notes: Optional[str] = Field(None, description="Director's creative direction notes")
     primary_language: Language
+    recommended_characters: List[str] = Field(default_factory=list, description="Character role names for this video")
 
 
 class LinguisticOutput(BaseModel):
@@ -328,12 +343,21 @@ class Scene(BaseModel):
     Each scene is max 8 seconds (Veo 3 constraint).
     """
     scene_id: int = Field(..., description="Sequential scene identifier")
-    duration_est_seconds: int = Field(..., ge=1, le=8, description="Duration in seconds (max 8s for Veo 3)")
+    duration_est_seconds: int = Field(..., ge=1, description="Duration in seconds (clamped to 8s max for Veo 3)")
     visual_prompt: str = Field(..., description="Prompt for visual generation. Use {primary_avatar_id} for avatar reference")
     audio_script: str = Field(..., description="Script for voiceover/audio generation")
     text_overlay: Optional[str] = Field(None, description="Text to overlay on the video")
     transition: Optional[str] = Field(None, description="Transition effect to next scene")
     background_music_mood: Optional[str] = Field(None, description="Mood for background music (e.g., tense, hopeful)")
+
+    @field_validator('duration_est_seconds', mode='before')
+    @classmethod
+    def clamp_duration(cls, v):
+        try:
+            v = int(v)
+        except (TypeError, ValueError):
+            return 8
+        return min(v, 8)
 
 
 # ==================== OUTPUT: Visual/Audio Agent Input ====================
@@ -344,7 +368,7 @@ class MetaData(BaseModel):
     target_audience: TargetAudience
     tone: Tone
     avatar: str = Field(..., description="Avatar ID for the primary character")
-    video_format: Literal["reel", "story", "post"] = Field("reel")
+    video_format: Literal["reel", "story", "post", "landscape"] = Field("reel")
     total_duration_seconds: int = Field(..., description="Target total duration")
 
 
@@ -479,6 +503,7 @@ class VeoClipEntry(BaseModel):
     filename: str
     path: str
     estimated_cost_usd: float = 0.0
+    video_base64: Optional[str] = Field(default=None, description="Base64-encoded video data (data:video/mp4;base64,...) for browser playback")
 
 
 class VisualAudioPipelineState(BaseModel):
@@ -491,6 +516,7 @@ class VisualAudioPipelineState(BaseModel):
     clip_ref_images: List[ClipRefEntry] = Field(default_factory=list)
     veo_clips: List[VeoClipEntry] = Field(default_factory=list)
     output_dir: Optional[str] = None
+    video_format: str = Field(default="reel", description="Video format used for aspect ratio")
 
 
 # ==================== SOCIAL OFFICER OUTPUT ====================

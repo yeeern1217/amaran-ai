@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Law Enforcement Narrator (Inspektor Amir)",
+    "description": "FULL BODY, a Malaysian man in his late 30s, athletic build, wearing a crisp dark navy blue Royal Malaysia Police (PDRM) uniform with silver badges on the shoulders and a name tag that reads 'AMIR'. He has short, neat black hair and is wearing polished black leather tactical boots.",
+    "filename": "Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_other_27dca691_zh\\character_refs\\Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "The Victim (Madam Lim)",
+    "description": "FULL BODY, a Malaysian woman of Chinese descent in her early 60s, slender build, wearing a traditional floral pattern cotton sarong kebaya with a light blue blouse. Her hair is tied back in a neat bun, with soft bangs framing her face, and she wears simple gold earrings and black flat sandals.",
+    "filename": "The_Victim_Madam_Lim_2x2_grid.png",
+    "path": "output\\scam_other_27dca691_zh\\character_refs\\The_Victim_Madam_Lim_2x2_grid.png"
+  },
+  {
+    "role": "The Victim's Son",
+    "description": "FULL BODY, a Malaysian man in his early 30s, wearing a smart-casual office outfit consisting of a light gray button-down shirt with sleeves rolled up to the elbows, dark navy chinos, and brown leather loafers. He has a clean-shaven face and short, modern black hair.",
+    "filename": "The_Victim_s_Son_2x2_grid.png",
+    "path": "output\\scam_other_27dca691_zh\\character_refs\\The_Victim_s_Son_2x2_grid.png"
+  },
+  {
+    "role": "The AI-Generated Impersonator (Scammer)",
+    "description": "FULL BODY, an anonymous and featureless human-shaped silhouette made of glowing blue digital soundwaves and binary code fragments. The figure is void of any facial features or skin, appearing as a translucent AI entity with a faint neon grid pulsing inside its chest.",
+    "filename": "The_AI_Generated_Impersonator_Scammer_2x2_grid.png",
+    "path": "output\\scam_other_27dca691_zh\\character_refs\\The_AI_Generated_Impersonator_Scammer_2x2_grid.png"
+  }
+]

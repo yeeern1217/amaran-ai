@@ -8,7 +8,6 @@ import {
   Settings2,
   Film,
   Users,
-  Clapperboard,
   Share2,
   ChevronRight,
   Image as ImageIcon,

@@ -23,19 +23,19 @@ class Settings(BaseModel):
     
     # Model defaults
     default_research_model: str = Field(
-        default_factory=lambda: os.getenv("RESEARCH_MODEL", "gemini-2.0-flash"),
+        default_factory=lambda: os.getenv("RESEARCH_MODEL", "gemini-2.5-flash"),
         description="Default model for Research Agent"
     )
     default_director_model: str = Field(
-        default_factory=lambda: os.getenv("DIRECTOR_MODEL", "gemini-2.0-flash"),
+        default_factory=lambda: os.getenv("DIRECTOR_MODEL", "gemini-2.5-flash"),
         description="Default model for Director Agent"
     )
     default_linguistic_model: str = Field(
-        default_factory=lambda: os.getenv("LINGUISTIC_MODEL", "gemini-2.0-flash"),
+        default_factory=lambda: os.getenv("LINGUISTIC_MODEL", "gemini-2.5-flash"),
         description="Default model for Linguistic Agent"
     )
     default_sensitivity_model: str = Field(
-        default_factory=lambda: os.getenv("SENSITIVITY_MODEL", "gemini-2.0-flash"),
+        default_factory=lambda: os.getenv("SENSITIVITY_MODEL", "gemini-2.5-flash"),
         description="Default model for Sensitivity Check Agent"
     )
     default_visual_audio_model: str = Field(
@@ -43,7 +43,7 @@ class Settings(BaseModel):
         description="Default model for Visual/Audio Agent (text gen stages)"
     )
     default_social_model: str = Field(
-        default_factory=lambda: os.getenv("SOCIAL_MODEL", "gemini-2.0-flash"),
+        default_factory=lambda: os.getenv("SOCIAL_MODEL", "gemini-2.5-flash"),
         description="Default model for Social Officer Agent"
     )
     visual_audio_image_model: str = Field(

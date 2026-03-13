@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Inspektor Amir",
+    "description": "FULL BODY. A Malaysian male in his late 30s, professional and authoritative appearance. He is wearing a crisp, dark blue Royal Malaysia Police (PDRM) uniform including the formal peaked cap, insignia on the shoulders, and polished black boots. He has a clean-shaven face and a short, neat haircut.",
+    "filename": "Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_other_23b0ec6f_en\\character_refs\\Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "Encik Rahman",
+    "description": "FULL BODY. A retired Malaysian male in his late 60s with silver-gray hair and a gentle expression. He is wearing a traditional light blue Baju Melayu top with dark trousers and simple indoor sandals. He has a slim build and a kind, elderly appearance.",
+    "filename": "Encik_Rahman_2x2_grid.png",
+    "path": "output\\scam_other_23b0ec6f_en\\character_refs\\Encik_Rahman_2x2_grid.png"
+  },
+  {
+    "role": "Fake PDRM Officer",
+    "description": "FULL BODY. An anonymous and featureless human silhouette standing in a dark void. The figure has glowing red digital binary code flowing across its surface to represent a cyber-criminal. The shape is human-like but lacks any facial features or skin, wearing a dark hooded cloak that obscures its form.",
+    "filename": "Fake_PDRM_Officer_2x2_grid.png",
+    "path": "output\\scam_other_23b0ec6f_en\\character_refs\\Fake_PDRM_Officer_2x2_grid.png"
+  }
+]

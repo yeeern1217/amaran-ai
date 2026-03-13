@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Distraught victim of a previous scam",
+    "description": "FULL BODY middle-aged Malaysian man, wearing a plain cotton button-up shirt in light grey and dark navy trousers. He has short black hair with slight greying at the temples and wears simple black-rimmed glasses.",
+    "filename": "Distraught_victim_of_a_previous_scam_2x2_grid.png",
+    "path": "output\\scam_other_ebe39f70_en\\character_refs\\Distraught_victim_of_a_previous_scam_2x2_grid.png"
+  },
+  {
+    "role": "Fake recovery agent (Scammer)",
+    "description": "FULL BODY featureless human-shaped silhouette made of dense black smoke, wearing a translucent glowing blue necktie to represent a fake professional appearance.",
+    "filename": "Fake_recovery_agent_Scammer_2x2_grid.png",
+    "path": "output\\scam_other_ebe39f70_en\\character_refs\\Fake_recovery_agent_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Digital avatar of the recovery firm",
+    "description": "FULL BODY holographic AI figure with a smooth, featureless robotic head and a body constructed from glowing cyan circuitry patterns, wearing a digital representation of a formal suit jacket.",
+    "filename": "Digital_avatar_of_the_recovery_firm_2x2_grid.png",
+    "path": "output\\scam_other_ebe39f70_en\\character_refs\\Digital_avatar_of_the_recovery_firm_2x2_grid.png"
+  },
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY Malaysian man in his late 30s, wearing a crisp, formal Royal Malaysia Police (PDRM) dark blue uniform with silver buttons, official insignia, and a peaked cap. He has a clean-shaven face and polished black boots.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_other_ebe39f70_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  }
+]

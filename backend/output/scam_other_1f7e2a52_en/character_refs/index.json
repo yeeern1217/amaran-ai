@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Law Enforcement Narrator (Inspektor Amir)",
+    "description": "FULL BODY: A Malaysian male police officer in his late 30s. He is wearing a crisp, formal Royal Malaysia Police (PDRM) uniform including a navy blue short-sleeved shirt with official insignia, matching trousers, a black leather belt, and polished black boots. He has a neat, short haircut and a clean-shaven face.",
+    "filename": "Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_other_1f7e2a52_en\\character_refs\\Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "Small Business Owner (Victim)",
+    "description": "FULL BODY: A middle-aged Malaysian man in his late 40s. He is dressed in a casual professional attire consisting of a light blue button-up shirt with sleeves rolled up to the elbows, dark charcoal grey slacks, and brown leather loafers. He has short black hair with slight graying at the temples.",
+    "filename": "Small_Business_Owner_Victim_2x2_grid.png",
+    "path": "output\\scam_other_1f7e2a52_en\\character_refs\\Small_Business_Owner_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake Legal Consultant (Scammer)",
+    "description": "FULL BODY: A featureless, anonymous humanoid silhouette wearing a ghostly, translucent business suit. The figure is composed of dark, flowing digital data particles with glowing red eyes. The overall appearance is a robotic, AI-generated entity representing a false identity.",
+    "filename": "Fake_Legal_Consultant_Scammer_2x2_grid.png",
+    "path": "output\\scam_other_1f7e2a52_en\\character_refs\\Fake_Legal_Consultant_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Online Advertisement Bot",
+    "description": "FULL BODY: A sleek, mechanical humanoid robot with a metallic silver surface and glowing blue circuitry lines running across its limbs. Instead of a face, it has a flat digital screen displaying a spinning 'loading' icon. Its form is slim and clinical, symbolizing an automated digital program.",
+    "filename": "Online_Advertisement_Bot_2x2_grid.png",
+    "path": "output\\scam_other_1f7e2a52_en\\character_refs\\Online_Advertisement_Bot_2x2_grid.png"
+  }
+]

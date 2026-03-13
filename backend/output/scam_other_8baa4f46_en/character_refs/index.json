@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Distressed scam victim",
+    "description": "FULL BODY: A 60-year-old Malaysian woman of Malay ethnicity. She has a gentle face with visible worry lines. She is wearing a modest floral print baju kurung in soft blue and a simple cream-colored tudung (hijab). She wears small gold spectacles and black leather sandals.",
+    "filename": "Distressed_scam_victim_2x2_grid.png",
+    "path": "output\\scam_other_8baa4f46_en\\character_refs\\Distressed_scam_victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake recovery agent",
+    "description": "FULL BODY: An anonymous human-shaped figure acting as a scammer. The figure is a featureless dark silhouette with glowing blue circuitry lines running across its body like a digital network. It wears a translucent, glitchy business suit overlay to mimic a professional appearance.",
+    "filename": "Fake_recovery_agent_2x2_grid.png",
+    "path": "output\\scam_other_8baa4f46_en\\character_refs\\Fake_recovery_agent_2x2_grid.png"
+  },
+  {
+    "role": "Police inspector/Authority figure",
+    "description": "FULL BODY: A 40-year-old Malaysian man of Malay ethnicity. He has a neat, short haircut and a professional demeanor. He is wearing the formal dark blue uniform of the Royal Malaysia Police (PDRM), complete with silver insignia on the shoulders, a utility belt, and polished black tactical boots.",
+    "filename": "Police_inspector_Authority_figure_2x2_grid.png",
+    "path": "output\\scam_other_8baa4f46_en\\character_refs\\Police_inspector_Authority_figure_2x2_grid.png"
+  }
+]

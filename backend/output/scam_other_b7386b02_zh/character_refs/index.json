@@ -1,0 +1,32 @@
+[
+  {
+    "role": "Law Enforcement Narrator (Inspektor Amir)",
+    "description": "FULL BODY. A Malaysian male in his late 30s, wearing a crisp dark blue Polis Diraja Malaysia (PDRM) uniform with silver badges and rank insignia on the shoulders. He has a clean-cut short hairstyle and polished black leather boots.",
+    "filename": "Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_other_b7386b02_zh\\character_refs\\Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "Desperate Job Seeker (The Money Mule)",
+    "description": "FULL BODY. A young Malaysian woman in her early 20s wearing a simple, slightly faded t-shirt, loose-fitting denim jeans, and worn canvas shoes. She has a slender build and neatly tied back dark hair.",
+    "filename": "Desperate_Job_Seeker_The_Money_Mule_2x2_grid.png",
+    "path": "output\\scam_other_b7386b02_zh\\character_refs\\Desperate_Job_Seeker_The_Money_Mule_2x2_grid.png"
+  },
+  {
+    "role": "Fake Recruitment Manager (Scammer)",
+    "description": "FULL BODY. A featureless human-shaped silhouette made of glowing digital matrix code and glitching pixels, wearing a translucent suit-shaped outline to mimic a professional appearance.",
+    "filename": "Fake_Recruitment_Manager_Scammer_2x2_grid.png",
+    "path": "output\\scam_other_b7386b02_zh\\character_refs\\Fake_Recruitment_Manager_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Elderly Investment Victims (Source of funds)",
+    "description": "FULL BODY. A Malaysian elderly couple in their late 60s. The man wears a traditional batik shirt and slacks, and the woman wears a modest floral baju kurung with a matching tudung (headscarf). They wear simple sandals.",
+    "filename": "Elderly_Investment_Victims_Source_of_funds_2x2_grid.png",
+    "path": "output\\scam_other_b7386b02_zh\\character_refs\\Elderly_Investment_Victims_Source_of_funds_2x2_grid.png"
+  },
+  {
+    "role": "Criminal Courier (The Bagman)",
+    "description": "FULL BODY. An anonymous human figure completely obscured in a matte black tactical bodysuit and a smooth, featureless reflective glass mask that hides all facial features.",
+    "filename": "Criminal_Courier_The_Bagman_2x2_grid.png",
+    "path": "output\\scam_other_b7386b02_zh\\character_refs\\Criminal_Courier_The_Bagman_2x2_grid.png"
+  }
+]

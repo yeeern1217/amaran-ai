@@ -90,9 +90,28 @@ export function PagePreview() {
       })
 
       setChatMessages((prev) => [...prev, { role: "ai", text: response.response }])
+      setChatHistory((prev) => [...prev, { role: "assistant" as const, content: response.response }])
 
-      if (response.updated && response.updated_frames) {
-        setPreviewState(response.updated_frames)
+      if (response.updated) {
+        // Visual prompts were updated — regenerate preview frames
+        setChatMessages((prev) => [
+          ...prev,
+          { role: "ai", text: "Regenerating preview frames with the updated scene descriptions..." },
+        ])
+        setPreviewState(null)
+        try {
+          const languageCode = languageCodeMap[config.language] ?? "en"
+          const framesResponse = await generatePreviewFrames({
+            session_id: sessionId,
+            language_code: languageCode,
+          })
+          setPreviewState(framesResponse.preview_state)
+        } catch {
+          setChatMessages((prev) => [
+            ...prev,
+            { role: "ai", text: "Frame regeneration failed — your visual prompt changes are saved and will apply on the next generation." },
+          ])
+        }
       }
     } catch (err) {
       console.error("Failed to chat about preview frames:", err)
@@ -283,7 +302,7 @@ export function PagePreview() {
               className="flex-1"
               disabled={!previewState && !error}
             >
-              Generate Video
+              Proceed to Clips
               <ArrowRight className="size-4" />
             </Button>
           </div>

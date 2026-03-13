@@ -1,0 +1,26 @@
+[
+  {
+    "segment_index": 1,
+    "filename": "segment_1.mp4",
+    "path": "output\\scam_other_7f294417_en\\veo_clips\\segment_1.mp4",
+    "estimated_cost_usd": 1.2
+  },
+  {
+    "segment_index": 2,
+    "filename": "segment_2.mp4",
+    "path": "output\\scam_other_7f294417_en\\veo_clips\\segment_2.mp4",
+    "estimated_cost_usd": 1.2
+  },
+  {
+    "segment_index": 3,
+    "filename": "segment_3.mp4",
+    "path": "output\\scam_other_7f294417_en\\veo_clips\\segment_3.mp4",
+    "estimated_cost_usd": 1.2
+  },
+  {
+    "segment_index": 4,
+    "filename": "segment_4.mp4",
+    "path": "output\\scam_other_7f294417_en\\veo_clips\\segment_4.mp4",
+    "estimated_cost_usd": 1.2
+  }
+]

@@ -208,7 +208,7 @@ export function PageSafety() {
           Back to Preview
         </Button>
         <Button
-          onClick={() => setCurrentStep(6)}
+          onClick={() => setCurrentStep(5)}
           className="flex-1"
           size="lg"
         >
