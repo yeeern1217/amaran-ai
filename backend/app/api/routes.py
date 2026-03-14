@@ -188,6 +188,10 @@ class ChatVideoPackageResponse(BaseModel):
     response: str = Field(..., description="AI response")
     director_output: Optional[DirectorOutput] = Field(None, description="Current director output (updated if changes applied)")
     video_package: Optional[Dict[str, Any]] = Field(None, description="Current video package if available")
+    character_descriptions: Optional[List[Dict[str, Any]]] = Field(
+        None,
+        description="Updated character descriptions and reference images when character roster changes",
+    )
     updated: bool = Field(default=False, description="Whether changes were applied")
     changes_applied: Optional[Dict[str, Any]] = Field(None, description="Fields/scenes that were updated")
 
@@ -788,10 +792,15 @@ async def generate_video_package(request: GenerateRequest):
         # These are generated early so the Character page can display them.
         # The same images will be reused by /video-assets and /preview-frames later
         # (the stepwise pipeline skips completed stages automatically).
+        # Reset prior VA state for fresh /generate runs in the same session.
+        # Otherwise stale character/script artifacts can leak into the new script.
+        if pipeline.state:
+            pipeline.state.visual_audio = None
+
         t5 = time.time()
         logger.info("[GENERATE] Step 5 — Visual/Audio Agent stages 1-4: character descriptions + images...")
         character_descriptions_data = None
-        recommended_characters = []
+        recommended_characters = list(director_output.recommended_characters or [])
         try:
             # Pick the first language version from the assembled package
             first_lang_code = next(iter(package.video_inputs))
@@ -804,16 +813,18 @@ async def generate_video_package(request: GenerateRequest):
                 stop_after="char_refs",
             )
             
-            # Extract character role names
-            if va_state.character_descriptions:
-                recommended_characters = [c.role for c in va_state.character_descriptions.characters]
-            
             # Build character descriptions with base64-encoded images
             character_descriptions_data = []
             char_ref_by_role = {r.role: r for r in va_state.character_ref_images}
             
             if va_state.character_descriptions:
-                for char in va_state.character_descriptions.characters:
+                # Keep canonical Director role order to stay in sync with Studio scenes.
+                canonical_roles = recommended_characters or [c.role for c in va_state.character_descriptions.characters]
+                desc_by_role = {c.role: c for c in va_state.character_descriptions.characters}
+                for role in canonical_roles:
+                    char = desc_by_role.get(role)
+                    if not char:
+                        continue
                     char_entry: Dict[str, Any] = {
                         "role": char.role,
                         "type": char.type,
@@ -832,19 +843,17 @@ async def generate_video_package(request: GenerateRequest):
                     
                     character_descriptions_data.append(char_entry)
             
-            logger.info("[GENERATE] Step 5 — Character generation done (%.1fs) — %d characters, %d images",
+            logger.info("[GENERATE] Step 5 — Character generation done (%.1fs) — %d canonical characters, %d images",
                         time.time() - t5, len(recommended_characters), len(va_state.character_ref_images))
         except Exception as e:
             logger.error("[GENERATE] Step 5 — Character generation failed: %s", e, exc_info=True)
-            # Fallback: use Director Agent's character list (always populated from script)
-            recommended_characters = director_output.recommended_characters or []
             character_descriptions_data = None
 
-        # Final fallback: if VA pipeline returned no characters, use Director Agent's list
+        # Final fallback: ensure we always have Director Agent character names from script.
         if not recommended_characters and director_output.recommended_characters:
-            logger.info("[GENERATE] Step 5 — Using Director Agent character names as fallback (%d chars)",
+            logger.info("[GENERATE] Step 5 — Using Director Agent character names as canonical list (%d chars)",
                         len(director_output.recommended_characters))
-            recommended_characters = director_output.recommended_characters
+            recommended_characters = list(director_output.recommended_characters)
 
         total = time.time() - t0
         logger.info("[GENERATE] === Video package generation completed in %.1fs ===", total)
@@ -891,14 +900,23 @@ async def generate_video_assets(request: VideoAssetsRequest, background_tasks: B
         )
     
     video_inputs = pipeline.state.video_package.video_inputs
+    effective_language_code = request.language_code
     if request.language_code not in video_inputs:
         available = list(video_inputs.keys())
-        raise HTTPException(
-            status_code=400,
-            detail=f"Language '{request.language_code}' not in package. Available: {available}"
-        )
-    
-    video_input = video_inputs[request.language_code]
+        if "en" in video_inputs:
+            logger.warning(
+                "[VIDEO-ASSETS] Requested language '%s' not in package. Falling back to 'en'. Available=%s",
+                request.language_code,
+                available,
+            )
+            effective_language_code = "en"
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Language '{request.language_code}' not in package. Available: {available}"
+            )
+
+    video_input = video_inputs[effective_language_code]
     
     try:
         t0 = time.time()
@@ -929,9 +947,13 @@ async def generate_video_assets(request: VideoAssetsRequest, background_tasks: B
         return VideoAssetsResponse(
             session_id=request.session_id,
             status="completed" if not request.stop_after else f"completed_through_{stopped}",
-            language_code=request.language_code,
+            language_code=effective_language_code,
             visual_audio_state=va_state.model_dump(mode="json"),
-            message=f"Visual/Audio assets generated through stage: {stopped}",
+            message=(
+                f"Visual/Audio assets generated through stage: {stopped}"
+                if effective_language_code == request.language_code
+                else f"Requested language '{request.language_code}' unavailable; generated using '{effective_language_code}' package through stage: {stopped}"
+            ),
         )
     except Exception as e:
         logger.error("[VIDEO-ASSETS] Failed: %s", e, exc_info=True)
@@ -1168,20 +1190,30 @@ Reply in the EXACT SAME language the user writes in."""
             pipeline.state.director_output = director_output
             updated = True
 
-            # Also update scene visual_prompts in the video_package if present
-            video_package = pipeline.state.video_package
-            if video_package:
-                for lang_code, vi in video_package.video_inputs.items():
-                    for scene_num_str, scene_updates in scene_changes.items():
-                        scene_idx = int(scene_num_str) - 1
-                        if 0 <= scene_idx < len(vi.scenes):
-                            if "visual_prompt" in scene_updates:
-                                vi.scenes[scene_idx].visual_prompt = scene_updates["visual_prompt"]
+            # Re-assemble video_package so all language versions reflect the updated scenes
+            if (pipeline.state.fact_sheet and pipeline.state.creator_config
+                    and pipeline.state.linguistic_output and pipeline.state.sensitivity_output):
+                pipeline.assemble_video_package(
+                    pipeline.state.fact_sheet,
+                    pipeline.state.creator_config,
+                    director_output,
+                    pipeline.state.linguistic_output,
+                    pipeline.state.sensitivity_output,
+                )
 
-            # Clear cached clip ref images so next generation picks up the new prompts
+            # Selectively clear VA caches only for changed segments
             if pipeline.state.visual_audio:
-                pipeline.state.visual_audio.clip_ref_images = []
-                pipeline.state.visual_audio.clip_ref_prompts = []
+                va = pipeline.state.visual_audio
+                changed_seg_ids = {int(s) for s in scene_changes}
+                va.veo_script = None  # cheap LLM call to regenerate
+                va.clip_ref_images = [
+                    e for e in va.clip_ref_images
+                    if e.segment_index not in changed_seg_ids
+                ]
+                va.clip_ref_prompts = [
+                    p for p in va.clip_ref_prompts
+                    if p.get("segment_index") not in changed_seg_ids
+                ]
 
         return ChatPreviewFramesResponse(
             response=response_text,
@@ -1320,16 +1352,70 @@ You MUST reply in the EXACT SAME language the user writes in."""
             new_char_descs = CharacterDescriptions(characters=new_descs)
 
             if va_state:
+                # Diff old vs new to find which roles actually changed
+                old_chars_by_role = {}
+                if va_state.character_descriptions:
+                    old_chars_by_role = {
+                        c.role: (c.type, c.description_for_image_generation)
+                        for c in va_state.character_descriptions.characters
+                    }
+                roles_to_regenerate = set()
+                for c in updated_characters:
+                    old_entry = old_chars_by_role.get(c["role"])
+                    if old_entry is None or old_entry != (c["type"], c["description"]):
+                        roles_to_regenerate.add(c["role"])
+
                 va_state.character_descriptions = new_char_descs
-                # Clear old images so they get regenerated
-                va_state.character_ref_images = []
+
+                # Selectively clear clip refs only for segments involving changed characters
+                if roles_to_regenerate and va_state.veo_script:
+                    affected_segments = {
+                        seg.segment_index
+                        for seg in va_state.veo_script.segments
+                        if roles_to_regenerate & set(seg.characters_involved)
+                    }
+                    if affected_segments:
+                        va_state.clip_ref_images = [
+                            e for e in va_state.clip_ref_images
+                            if e.segment_index not in affected_segments
+                        ]
+                        va_state.clip_ref_prompts = [
+                            p for p in va_state.clip_ref_prompts
+                            if p.get("segment_index") not in affected_segments
+                        ]
+                    else:
+                        # Role mapping could be stale (rename/restructure); safest is full clear
+                        va_state.clip_ref_images = []
+                        va_state.clip_ref_prompts = []
+                elif roles_to_regenerate:
+                    # No veo_script to determine segments — clear all clip refs (safe fallback)
+                    va_state.clip_ref_images = []
+                    va_state.clip_ref_prompts = []
+            else:
+                roles_to_regenerate = None  # full regeneration
             
-            # Regenerate character reference images in the background
+            # Regenerate character reference images (selective if possible)
             try:
                 va_agent = pipeline.visual_audio_agent
                 va_agent._ensure_client()
+
+                # Sync agent internal state from pipeline so selective
+                # regeneration can find existing images to preserve
+                if va_state and va_state.character_ref_images:
+                    va_agent._state.character_ref_images = va_state.character_ref_images
+                if va_state and va_state.character_descriptions:
+                    va_agent._state.character_descriptions = va_state.character_descriptions
+
                 output_dir = Path(va_agent._state.output_dir or "output") / "character_refs"
-                char_refs = await va_agent.generate_character_ref_images(new_char_descs, output_dir)
+                if roles_to_regenerate is not None and len(roles_to_regenerate) == 0:
+                    # No effective character changes; keep existing refs to avoid unnecessary regeneration cost.
+                    char_refs = va_state.character_ref_images if va_state else va_agent._state.character_ref_images
+                else:
+                    char_refs = await va_agent.generate_character_ref_images(
+                        new_char_descs,
+                        output_dir,
+                        roles_to_regenerate=roles_to_regenerate,
+                    )
                 
                 if va_state:
                     va_state.character_ref_images = char_refs
@@ -1374,6 +1460,229 @@ async def get_video_assets_status(session_id: str):
         "status": pipeline.state.visual_audio_status.value,
         "visual_audio_state": va_state.model_dump(mode="json") if va_state else None,
     }
+
+
+# ==================== VIDEO EXPORT ====================
+
+class ExportVideoRequest(BaseModel):
+    """Request schema for stitched video export."""
+    session_id: str
+    caption_languages: List[str] = Field(
+        default_factory=list,
+        description="Language codes for caption overlays (e.g. ['en','bm']). Empty = no captions."
+    )
+
+
+@router.post("/export/video")
+async def export_stitched_video(request: ExportVideoRequest):
+    """
+    Concatenate all Veo clips into a single MP4 file and stream it back.
+    Optionally burns in caption overlays in selected languages.
+    """
+    pipeline = _sessions.get(request.session_id)
+    if not pipeline:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    va_state = pipeline.state.visual_audio
+    if not va_state or not va_state.veo_clips:
+        raise HTTPException(status_code=400, detail="No video clips available. Generate clips first.")
+
+    # Collect clip file paths in segment order
+    clip_paths = []
+    for clip in sorted(va_state.veo_clips, key=lambda c: c.segment_index):
+        p = Path(clip.path)
+        if not p.exists():
+            raise HTTPException(status_code=400, detail=f"Clip file missing: {clip.filename}")
+        clip_paths.append(str(p))
+
+    if not clip_paths:
+        raise HTTPException(status_code=400, detail="No clip files found on disk.")
+
+    # Build caption texts per segment if requested
+    caption_texts: List[str] = []
+    if request.caption_languages:
+        vp = pipeline.state.video_package
+        if vp:
+            for clip in sorted(va_state.veo_clips, key=lambda c: c.segment_index):
+                seg_idx = clip.segment_index
+                parts = []
+                for lang_code in request.caption_languages:
+                    vi = vp.video_inputs.get(lang_code)
+                    if vi:
+                        for scene in vi.scenes:
+                            if scene.scene_id == seg_idx:
+                                parts.append(scene.audio_script)
+                                break
+                caption_texts.append("\n".join(parts) if parts else "")
+        else:
+            caption_texts = [""] * len(clip_paths)
+
+    try:
+        import shutil
+        import subprocess
+        import tempfile
+
+        ffmpeg_bin: Optional[str] = None
+        try:
+            import imageio_ffmpeg
+            ffmpeg_bin = imageio_ffmpeg.get_ffmpeg_exe()
+        except Exception:
+            ffmpeg_bin = None
+
+        if not ffmpeg_bin:
+            # Fallback: resolve ffmpeg from a python interpreter that has imageio_ffmpeg installed.
+            # This avoids hard dependency on the uvicorn interpreter site-packages.
+            for py_cmd in ["python", "py -3.11"]:
+                try:
+                    out = subprocess.check_output(
+                        f"{py_cmd} -c \"import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())\"",
+                        shell=True,
+                        text=True,
+                    ).strip()
+                    if out and Path(out).exists():
+                        ffmpeg_bin = out
+                        break
+                except Exception:
+                    continue
+
+        if not ffmpeg_bin:
+            ffmpeg_bin = shutil.which("ffmpeg")
+
+        if not ffmpeg_bin:
+            raise HTTPException(
+                status_code=500,
+                detail=(
+                    "FFmpeg runtime is not available. Install imageio-ffmpeg in the backend interpreter "
+                    "or install ffmpeg on PATH."
+                ),
+            )
+
+        def _ff_path(p: str) -> str:
+            return p.replace("\\", "/").replace("'", "'\\''")
+
+        # Concat using ffmpeg concat demuxer
+        concat_file = tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8")
+        concat_path = concat_file.name
+        try:
+            for cp in clip_paths:
+                concat_file.write(f"file '{_ff_path(cp)}'\n")
+        finally:
+            concat_file.close()
+
+        stitched_tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+        stitched_path = stitched_tmp.name
+        stitched_tmp.close()
+
+        concat_cmd = [
+            ffmpeg_bin,
+            "-y",
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            concat_path,
+            "-c",
+            "copy",
+            stitched_path,
+        ]
+        subprocess.run(concat_cmd, check=True, capture_output=True, text=True)
+
+        output_path = stitched_path
+
+        # Optional subtitle burn-in from selected caption languages.
+        # If subtitle rendering fails, we still return the stitched video.
+        if caption_texts and any(t.strip() for t in caption_texts):
+            vp = pipeline.state.video_package
+            durations: List[int] = []
+            if vp and vp.video_inputs:
+                first_lang = next(iter(vp.video_inputs.values()))
+                dur_by_id = {s.scene_id: int(s.duration_est_seconds or 8) for s in first_lang.scenes}
+                for clip in sorted(va_state.veo_clips, key=lambda c: c.segment_index):
+                    durations.append(dur_by_id.get(clip.segment_index, 8))
+            else:
+                durations = [8] * len(caption_texts)
+
+            def _fmt_srt_time(total_seconds: float) -> str:
+                ms = int((total_seconds - int(total_seconds)) * 1000)
+                sec = int(total_seconds) % 60
+                minute = int(total_seconds // 60) % 60
+                hour = int(total_seconds // 3600)
+                return f"{hour:02d}:{minute:02d}:{sec:02d},{ms:03d}"
+
+            srt_tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".srt", delete=False, encoding="utf-8")
+            srt_path = srt_tmp.name
+            try:
+                cursor = 0.0
+                idx = 1
+                for i, txt in enumerate(caption_texts):
+                    cleaned = txt.strip()
+                    dur = float(durations[i] if i < len(durations) else 8)
+                    if cleaned:
+                        start = _fmt_srt_time(cursor)
+                        end = _fmt_srt_time(cursor + dur)
+                        srt_tmp.write(f"{idx}\n{start} --> {end}\n{cleaned}\n\n")
+                        idx += 1
+                    cursor += dur
+            finally:
+                srt_tmp.close()
+
+            caption_tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+            caption_path = caption_tmp.name
+            caption_tmp.close()
+
+            sub_path = srt_path.replace("\\", "/").replace(":", "\\:")
+            subtitle_cmd = [
+                ffmpeg_bin,
+                "-y",
+                "-i",
+                stitched_path,
+                "-vf",
+                f"subtitles='{sub_path}'",
+                "-c:a",
+                "copy",
+                caption_path,
+            ]
+            try:
+                subprocess.run(subtitle_cmd, check=True, capture_output=True, text=True)
+                output_path = caption_path
+            except Exception as sub_err:
+                logger.warning("[EXPORT] Subtitle burn-in failed, returning plain stitched video: %s", sub_err)
+
+            try:
+                os.unlink(srt_path)
+            except OSError:
+                pass
+
+        tmp_path = output_path
+        cleanup_paths = [concat_path, stitched_path]
+        if output_path != stitched_path:
+            cleanup_paths.append(output_path)
+
+        def iterfile():
+            try:
+                with open(tmp_path, "rb") as f:
+                    while chunk := f.read(1024 * 1024):
+                        yield chunk
+            finally:
+                for p in cleanup_paths:
+                    try:
+                        if os.path.exists(p):
+                            os.unlink(p)
+                    except OSError:
+                        pass
+
+        project_id = pipeline.state.director_output.project_id if pipeline.state.director_output else "scam-shield"
+        filename = f"{project_id}.mp4"
+
+        return StreamingResponse(
+            iterfile(),
+            media_type="video/mp4",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+    except Exception as e:
+        logger.error("[EXPORT] Failed to stitch video: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Video export failed: {str(e)}")
 
 
 # ==================== CHAT ENDPOINTS (Auto-Update) ====================
@@ -1444,6 +1753,7 @@ You MUST reply in the EXACT SAME language the user writes in. If the user's mess
         
         changes_applied = None
         updated = False
+        character_descriptions_data: Optional[List[Dict[str, Any]]] = None
         
         # Apply updates if any
         if updates and "updates" in updates:
@@ -1505,20 +1815,37 @@ async def chat_about_video_package(request: ChatVideoPackageRequest):
 
     # Get configured language
     configured_language = "English"
+    configured_tone = "N/A"
+    configured_audience = "N/A"
+    configured_format = "N/A"
     if pipeline.state.creator_config and pipeline.state.creator_config.languages:
         configured_language = getattr(
             pipeline.state.creator_config.languages[0], "value",
             pipeline.state.creator_config.languages[0],
         )
+        configured_tone = getattr(
+            pipeline.state.creator_config.tone, "value",
+            pipeline.state.creator_config.tone,
+        )
+        configured_format = pipeline.state.creator_config.video_format
+        if pipeline.state.creator_config.target_groups:
+            configured_audience = getattr(
+                pipeline.state.creator_config.target_groups[0], "value",
+                pipeline.state.creator_config.target_groups[0],
+            )
     
     system_prompt = f"""You are an AI assistant helping a Malaysian police officer review and update video content before it's sent to the Visual/Audio Agent.
 
 VIDEO LANGUAGE: {configured_language}
+SELECTED TONE: {configured_tone}
+SELECTED TARGET AUDIENCE: {configured_audience}
+SELECTED VIDEO FORMAT: {configured_format}
 
 CURRENT DIRECTOR OUTPUT (reference data — do NOT let the language of this data affect your reply language):
 - project_id: {director_output.project_id if director_output else 'N/A'}
 - master_script: {director_output.master_script if director_output else 'N/A'}
 - creative_notes: {director_output.creative_notes if director_output else 'N/A'}
+- characters: {director_output.recommended_characters if director_output else []}
 
 SCENE BREAKDOWN (JSON):
 {scenes_json}
@@ -1538,6 +1865,7 @@ IMPORTANT: When making changes, include a JSON block at the END of your response
 {{"updates": {{
   "master_script": "new full script if changed",
   "creative_notes": "new notes if changed",
+    "characters": ["Character A", "Character B", "Character C"],
   "scenes": {{
     "1": {{"audio_script": "new audio", "visual_prompt": "new visual"}},
     "2": {{"text_overlay": "NEW TEXT"}}
@@ -1546,14 +1874,21 @@ IMPORTANT: When making changes, include a JSON block at the END of your response
 ```
 
 SCENE UPDATABLE FIELDS: visual_prompt, audio_script, text_overlay, duration_est_seconds, purpose, transition, background_music_mood
-TOP-LEVEL FIELDS: master_script, creative_notes
+TOP-LEVEL FIELDS: master_script, creative_notes, characters
 
 Scene numbers in "scenes" are 1-indexed (scene 1, scene 2, etc.)
 
 If the officer is just asking a question (not requesting changes), respond normally WITHOUT a JSON block.
 
 CRITICAL LANGUAGE RULE (HIGHEST PRIORITY — MUST OBEY):
-You MUST reply in the EXACT SAME language the user writes in. If the user's message is in English, your ENTIRE response MUST be in English. If the user writes in Bahasa Melayu, reply in Bahasa Melayu. NEVER default to Malay just because the scene/script data is in Malay. The language of the reference data above is IRRELEVANT to your reply language. Match the USER's language only."""
+You MUST reply in the EXACT SAME language the user writes in. If the user's message is in English, your ENTIRE response MUST be in English. If the user writes in Bahasa Melayu, reply in Bahasa Melayu. NEVER default to Malay just because the scene/script data is in Malay. The language of the reference data above is IRRELEVANT to your reply language. Match the USER's language only.
+
+CONTENT CONSISTENCY RULES (MUST OBEY WHEN RETURNING JSON updates):
+- For updated audio_script, text_overlay, and master_script, keep content in VIDEO LANGUAGE ({configured_language}) unless the user explicitly asks to change language.
+- Preserve selected tone ({configured_tone}), target audience ({configured_audience}), and video format ({configured_format}) unless explicitly requested.
+- Keep character roles/persona traits consistent across scenes. Do not introduce contradictory persona changes unless the user asks for it.
+- If the user asks to change only one scene, avoid rewriting unrelated scenes.
+"""
 
     try:
         response_text, updates = await _call_chat_llm_with_updates(
@@ -1569,12 +1904,17 @@ You MUST reply in the EXACT SAME language the user writes in. If the user's mess
         if updates and "updates" in updates and director_output:
             changes = updates["updates"]
             update_dict = {}
+            previous_characters = list(director_output.recommended_characters or [])
             
             # Update top-level fields
             if "master_script" in changes:
                 update_dict["master_script"] = changes["master_script"]
             if "creative_notes" in changes:
                 update_dict["creative_notes"] = changes["creative_notes"]
+            if "characters" in changes and isinstance(changes["characters"], list):
+                sanitized_chars = [str(c).strip() for c in changes["characters"] if str(c).strip()]
+                if sanitized_chars:
+                    update_dict["recommended_characters"] = sanitized_chars
             
             # Update scenes
             if "scenes" in changes:
@@ -1582,7 +1922,10 @@ You MUST reply in the EXACT SAME language the user writes in. If the user's mess
                 new_scenes = list(director_output.scene_breakdown)  # Copy
                 
                 for scene_num_str, scene_updates in scene_changes.items():
-                    scene_idx = int(scene_num_str) - 1  # Convert to 0-indexed
+                    try:
+                        scene_idx = int(scene_num_str) - 1  # Convert to 0-indexed
+                    except (TypeError, ValueError):
+                        continue
                     if 0 <= scene_idx < len(new_scenes):
                         for field, value in scene_updates.items():
                             if field in {"visual_prompt", "audio_script", "text_overlay", 
@@ -1600,12 +1943,122 @@ You MUST reply in the EXACT SAME language the user writes in. If the user's mess
                     changes_applied = {}
                 changes_applied.update({k: v for k, v in update_dict.items() if k != "scene_breakdown"})
                 updated = True
+
+                # Re-assemble video_package so downstream (Preview / Clips) see updated prompts
+                if (pipeline.state.fact_sheet and pipeline.state.creator_config
+                        and pipeline.state.linguistic_output and pipeline.state.sensitivity_output):
+                    pipeline.assemble_video_package(
+                        pipeline.state.fact_sheet,
+                        pipeline.state.creator_config,
+                        director_output,
+                        pipeline.state.linguistic_output,
+                        pipeline.state.sensitivity_output,
+                    )
+                    video_package = pipeline.state.video_package
+
+                # If Studio chat changed character roster, regenerate character descriptions
+                # and reference images immediately so Character page doesn't show placeholders.
+                if (
+                    "recommended_characters" in update_dict
+                    and video_package
+                    and video_package.video_inputs
+                ):
+                    try:
+                        # Prevent stale role/image reuse: force fresh character stages
+                        # before regenerating payload for the Character page.
+                        if pipeline.state.visual_audio:
+                            pipeline.state.visual_audio.obfuscated_story = None
+                            pipeline.state.visual_audio.veo_script = None
+                            pipeline.state.visual_audio.character_descriptions = None
+                            pipeline.state.visual_audio.character_ref_images = []
+                            pipeline.state.visual_audio.clip_ref_images = []
+                            pipeline.state.visual_audio.clip_ref_prompts = []
+
+                        first_lang_code = next(iter(video_package.video_inputs))
+                        first_video_input = video_package.video_inputs[first_lang_code]
+                        va_state = await pipeline.generate_video_assets_stepwise(
+                            video_input=first_video_input,
+                            output_dir=None,
+                            stop_after="char_refs",
+                        )
+
+                        desc_by_role = {}
+                        if va_state.character_descriptions:
+                            desc_by_role = {
+                                c.role: c for c in va_state.character_descriptions.characters
+                            }
+                        ref_by_role = {r.role: r for r in va_state.character_ref_images}
+
+                        character_descriptions_data = []
+                        for role in director_output.recommended_characters or []:
+                            desc = desc_by_role.get(role)
+                            ref = ref_by_role.get(role)
+                            entry: Dict[str, Any] = {
+                                "role": role,
+                                "type": desc.type if desc else "person",
+                                "description": desc.description_for_image_generation if desc else "",
+                                "image_url": None,
+                                "image_base64": None,
+                            }
+                            if ref and ref.path and Path(ref.path).exists():
+                                try:
+                                    with open(ref.path, "rb") as f:
+                                        b64 = base64.b64encode(f.read()).decode("utf-8")
+                                        entry["image_base64"] = f"data:image/png;base64,{b64}"
+                                except Exception as img_err:
+                                    logger.warning("[CHAT-VIDEO-PACKAGE] Failed to encode char image %s: %s", ref.path, img_err)
+                            character_descriptions_data.append(entry)
+                    except Exception as char_regen_err:
+                        logger.warning("[CHAT-VIDEO-PACKAGE] Character regeneration after roster update failed: %s", char_regen_err)
+
+                # Selectively clear VA caches only for changed segments
+                if pipeline.state.visual_audio:
+                    va = pipeline.state.visual_audio
+                    changed_seg_ids = set()
+                    if "scenes" in changes:
+                        for s in changes["scenes"]:
+                            try:
+                                changed_seg_ids.add(int(s))
+                            except (TypeError, ValueError):
+                                continue
+                    characters_changed = (
+                        "recommended_characters" in update_dict
+                        and update_dict["recommended_characters"] != previous_characters
+                    )
+
+                    if characters_changed:
+                        # Character roster changed from Studio chat: always force clip refs refresh.
+                        # If immediate regeneration failed, also clear char caches for a clean retry.
+                        va.obfuscated_story = None
+                        va.veo_script = None
+                        if character_descriptions_data is None:
+                            va.character_descriptions = None
+                            va.character_ref_images = []
+                        va.clip_ref_images = []
+                        va.clip_ref_prompts = []
+                        changed_seg_ids = set()
+
+                    va.veo_script = None  # cheap LLM call to regenerate
+                    if changed_seg_ids:
+                        va.clip_ref_images = [
+                            e for e in va.clip_ref_images
+                            if e.segment_index not in changed_seg_ids
+                        ]
+                        va.clip_ref_prompts = [
+                            p for p in va.clip_ref_prompts
+                            if p.get("segment_index") not in changed_seg_ids
+                        ]
+                    else:
+                        # Non-scene changes (master_script, creative_notes) — clear all clip refs
+                        va.clip_ref_images = []
+                        va.clip_ref_prompts = []
         
         return ChatVideoPackageResponse(
             session_id=request.session_id,
             response=response_text,
             director_output=director_output,
             video_package=video_package.model_dump(mode="json") if video_package else None,
+            character_descriptions=character_descriptions_data,
             updated=updated,
             changes_applied=changes_applied,
         )

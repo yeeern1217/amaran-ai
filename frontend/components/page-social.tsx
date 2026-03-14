@@ -179,7 +179,7 @@ export function PageSocial() {
 
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => setCurrentStep(6)}>
-            <ArrowLeft className="size-4 mr-1" /> Back
+            <ArrowLeft className="size-4 mr-1" /> Back to Screening Room
           </Button>
           <Button
             size="sm"

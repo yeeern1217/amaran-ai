@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Law Enforcement Officer (Inspektor Amir)",
+    "description": "Full body figure of a Malaysian man in his late 30s. He is wearing a crisp, professional Royal Malaysia Police (PDRM) dark blue uniform with silver badges on the chest and shoulder epaulettes. He has short, neat black hair and is standing in a tall, authoritative posture. He wears polished black boots.",
+    "filename": "Law_Enforcement_Officer_Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_other_9c9a6b0b_zh\\character_refs\\Law_Enforcement_Officer_Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "Scam Victim (Puan Lim)",
+    "description": "Full body figure of a middle-aged Malaysian Chinese woman in her 50s. She is wearing a professional blouse and tailored trousers, suitable for office wear, in a muted color palette. She has black hair styled in a practical short bob. She is wearing simple flat sandals and a small gold watch.",
+    "filename": "Scam_Victim_Puan_Lim_2x2_grid.png",
+    "path": "output\\scam_other_9c9a6b0b_zh\\character_refs\\Scam_Victim_Puan_Lim_2x2_grid.png"
+  },
+  {
+    "role": "Fake Anti-Scam Representative",
+    "description": "Full body anonymous human figure, featureless silhouette. The figure is a glowing digital cyan outline with no facial features, wearing a stylized suit made of binary code patterns to represent a digital entity.",
+    "filename": "Fake_Anti_Scam_Representative_2x2_grid.png",
+    "path": "output\\scam_other_9c9a6b0b_zh\\character_refs\\Fake_Anti_Scam_Representative_2x2_grid.png"
+  },
+  {
+    "role": "Fake Legal Expert",
+    "description": "Full body anonymous human figure, featureless silhouette. The figure has a matte black void-like appearance with glowing white circuits running across the torso and limbs, wearing a sharp-edged geometric cloak that mimics a formal legal robe.",
+    "filename": "Fake_Legal_Expert_2x2_grid.png",
+    "path": "output\\scam_other_9c9a6b0b_zh\\character_refs\\Fake_Legal_Expert_2x2_grid.png"
+  }
+]

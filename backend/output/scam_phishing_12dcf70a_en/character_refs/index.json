@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Young professional victim",
+    "description": "Full body figure of a Malaysian man in his late 20s, wearing a neat light blue long-sleeved button-up shirt tucked into charcoal grey trousers with a black leather belt and black formal shoes. He has short, styled black hair and a clean-shaven face.",
+    "filename": "Young_professional_victim_2x2_grid.png",
+    "path": "output\\scam_phishing_12dcf70a_en\\character_refs\\Young_professional_victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake promotional distributor",
+    "description": "Full body figure of a Malaysian man in his early 40s, wearing a bright yellow promotional polo shirt with a generic logo on the chest, paired with beige khaki pants and comfortable brown walking shoes. He has a friendly face and short black hair.",
+    "filename": "Fake_promotional_distributor_2x2_grid.png",
+    "path": "output\\scam_phishing_12dcf70a_en\\character_refs\\Fake_promotional_distributor_2x2_grid.png"
+  },
+  {
+    "role": "Scammer operating phishing site",
+    "description": "Full body anonymous human figure depicted as a featureless dark silhouette with glowing blue digital circuitry lines running across its form, standing in a void. It has 1-2 differentiating traits: a singular glowing red digital eye in the center of its head and metallic silver hands.",
+    "filename": "Scammer_operating_phishing_site_2x2_grid.png",
+    "path": "output\\scam_phishing_12dcf70a_en\\character_refs\\Scammer_operating_phishing_site_2x2_grid.png"
+  },
+  {
+    "role": "Inspektor Amir (Police Narrator)",
+    "description": "Full body figure of a Malaysian man in his 30s, dressed in a professional dark blue Royal Malaysia Police uniform with silver buttons, visible insignia on the shoulders, a black utility belt, and polished black tactical boots. He has a disciplined posture and a short, neat regulation haircut.",
+    "filename": "Inspektor_Amir_Police_Narrator_2x2_grid.png",
+    "path": "output\\scam_phishing_12dcf70a_en\\character_refs\\Inspektor_Amir_Police_Narrator_2x2_grid.png"
+  }
+]

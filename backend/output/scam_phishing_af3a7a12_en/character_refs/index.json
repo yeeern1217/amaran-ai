@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Inspektor Siti (Law Enforcement Narrator)",
+    "description": "FULL BODY head to toe. A Malaysian female police officer in her late 30s. She is wearing a professional, dark navy blue Royal Malaysia Police uniform including a peaked cap, official badges, and polished black boots. Her expression is stern and authoritative. Malaysian ethnicity with medium skin tone.",
+    "filename": "Inspektor_Siti_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_phishing_af3a7a12_en\\character_refs\\Inspektor_Siti_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Elderly Victim",
+    "description": "FULL BODY head to toe. An elderly Malaysian woman in her late 60s. She is wearing a modest, loose-fitting Baju Kurung with a matching tudung (headscarf), and comfortable flat shoes. She has a friendly, approachable face. Malaysian ethnicity.",
+    "filename": "Elderly_Victim_2x2_grid.png",
+    "path": "output\\scam_phishing_af3a7a12_en\\character_refs\\Elderly_Victim_2x2_grid.png"
+  },
+  {
+    "role": "QR Code Scammer",
+    "description": "FULL BODY head to toe. A featureless, anonymous human figure rendered as a dark obsidian-black silhouette. The figure has glowing neon-cyan circuit-board patterns tracing through its limbs and a blank, smooth surface where a face would be, representing a digital threat.",
+    "filename": "QR_Code_Scammer_2x2_grid.png",
+    "path": "output\\scam_phishing_af3a7a12_en\\character_refs\\QR_Code_Scammer_2x2_grid.png"
+  }
+]

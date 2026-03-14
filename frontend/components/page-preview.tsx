@@ -19,6 +19,13 @@ const languageCodeMap: Record<string, string> = {
   tamil: "ta",
 }
 
+const previewAspectClassByFormat: Record<string, string> = {
+  reel: "aspect-[9/16]",
+  story: "aspect-[9/16]",
+  post: "aspect-square",
+  landscape: "aspect-video",
+}
+
 export function PagePreview() {
   const { sessionId, config, previewState, setPreviewState, setCurrentStep } = useApp()
   const [isLoading, setIsLoading] = useState(false)
@@ -62,6 +69,7 @@ export function PagePreview() {
   }
 
   const frames = previewState?.frames ?? []
+  const previewAspectClass = previewAspectClassByFormat[config.videoFormat] ?? "aspect-video"
 
   const handleChatSend = async () => {
     if (!sessionId || !chatInput.trim() || isChatLoading) return
@@ -69,7 +77,7 @@ export function PagePreview() {
     const userText = chatInput.trim()
     setChatInput("")
 
-    const nextMessages = [...chatMessages, { role: "user", text: userText }]
+    const nextMessages = [...chatMessages, { role: "user" as const, text: userText }]
     const nextHistory = [
       ...chatHistory,
       {
@@ -240,13 +248,16 @@ export function PagePreview() {
                                       {frame ? "Generated" : "Pending"}
                                     </Badge>
                                   </div>
-                                  <div className="relative w-full aspect-video rounded-md bg-secondary/40 border border-border/60 flex items-center justify-center overflow-hidden">
+                                  <div className={cn(
+                                    "relative w-full rounded-md bg-secondary/40 border border-border/60 flex items-center justify-center overflow-hidden",
+                                    previewAspectClass,
+                                  )}>
                                     {frame?.image_data ? (
                                       <Image
                                         src={frame.image_data}
                                         alt={`Scene ${frame.scene_id} ${frame.frame_type} frame`}
                                         fill
-                                        className="object-cover"
+                                        className="object-contain"
                                         unoptimized
                                       />
                                     ) : (

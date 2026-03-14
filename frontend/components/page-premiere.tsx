@@ -2,10 +2,12 @@
 
 import { useRef, useState, useEffect, useCallback } from "react"
 import { useApp } from "@/lib/app-context"
+import { exportStitchedVideo, generateVideoAssets } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import {
   Download,
@@ -23,13 +25,46 @@ import {
   Film,
   ChevronLeft,
   ChevronRight,
+  Loader2,
+  Subtitles,
+  Video,
 } from "lucide-react"
 
+const LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "bm", label: "Bahasa Melayu" },
+  { code: "zh", label: "Mandarin" },
+  { code: "ta", label: "Tamil" },
+]
+
 export function PagePremiere() {
-  const { scenes, factCheck, config, visualAudioState, setCurrentStep } = useApp()
+  const {
+    sessionId,
+    scenes,
+    factCheck,
+    config,
+    visualAudioState,
+    setVisualAudioState,
+    setCurrentStep,
+  } = useApp()
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [activeClip, setActiveClip] = useState(0)
+
+  // Caption & language state
+  const langMap: Record<string, string> = {
+    english: "en", malay: "bm", mandarin: "zh", chinese: "zh", tamil: "ta",
+  }
+  const defaultLangCode = langMap[config.language] || "en"
+  const [captionLangs, setCaptionLangs] = useState<string[]>([])
+  const [pendingCaptionLangs, setPendingCaptionLangs] = useState<string[]>([])
+  const [clipLang, setClipLang] = useState<string>(defaultLangCode)
+  const [pendingClipLang, setPendingClipLang] = useState<string>(defaultLangCode)
+  const [isRegenerating, setIsRegenerating] = useState(false)
+  const [regenError, setRegenError] = useState<string | null>(null)
+
+  // Export state
+  const [isExporting, setIsExporting] = useState(false)
 
   const clips = visualAudioState?.veo_clips ?? []
   const totalDuration = scenes.reduce((sum, s) => sum + (s.duration || 8), 0)
@@ -84,24 +119,73 @@ export function PagePremiere() {
     }
   }
 
-  const handleDownload = useCallback(() => {
-    // Download all clips as individual files, or the current clip
-    const clip = clips[activeClip]
-    if (!clip) return
-    const src = getClipSrc(activeClip)
-    if (!src) return
+  function toggleCaption(code: string) {
+    setPendingCaptionLangs((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+    )
+  }
 
-    const link = document.createElement("a")
-    if (src.startsWith("data:")) {
-      link.href = src
-    } else {
-      link.href = src
+  function arraysEqual(a: string[], b: string[]) {
+    if (a.length !== b.length) return false
+    const sa = [...a].sort()
+    const sb = [...b].sort()
+    return sa.every((v, i) => v === sb[i])
+  }
+
+  const hasPendingCaptionChanges = !arraysEqual(captionLangs, pendingCaptionLangs)
+  const hasPendingLanguageChange = pendingClipLang !== clipLang
+
+  // Apply pending caption/language changes. Language changes require Veo regeneration.
+  async function handleRegenerateClipLanguage() {
+    if (!sessionId || (!hasPendingLanguageChange && !hasPendingCaptionChanges)) return
+    setIsRegenerating(true)
+    setRegenError(null)
+    try {
+      if (hasPendingLanguageChange) {
+        const result = await generateVideoAssets(sessionId, pendingClipLang)
+        if (result.visual_audio_state) {
+          setClipLang(pendingClipLang)
+          setVisualAudioState(result.visual_audio_state)
+          setActiveClip(0)
+        }
+      }
+      setCaptionLangs([...pendingCaptionLangs])
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to regenerate clips"
+      if (msg.toLowerCase().includes("not in package")) {
+        setPendingClipLang(clipLang)
+        setRegenError(
+          "This language was not generated in the current video package. Go back to Configuration and regenerate for that language first."
+        )
+      } else {
+        setRegenError(msg)
+      }
+    } finally {
+      setIsRegenerating(false)
     }
-    link.download = clip.filename || `scam-shield-clip-${activeClip + 1}.mp4`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }, [clips, activeClip])
+  }
+
+  // Download combined video
+  const handleDownload = useCallback(async () => {
+    if (!sessionId || clips.length === 0) return
+    setIsExporting(true)
+    try {
+      const blob = await exportStitchedVideo(sessionId, captionLangs)
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `${factCheck.scam_name || "scam-shield-video"}.mp4`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error("Export failed:", err)
+      alert(err instanceof Error ? err.message : "Failed to export video")
+    } finally {
+      setIsExporting(false)
+    }
+  }, [sessionId, clips.length, captionLangs, factCheck.scam_name])
 
   const handleShare = useCallback((platform: "whatsapp" | "instagram" | "tiktok") => {
     const title = factCheck.scam_name || "Scam Shield Video"
@@ -112,13 +196,11 @@ export function PagePremiere() {
       return
     }
 
-    // Fallback: open platform URLs
     switch (platform) {
       case "whatsapp":
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank")
         break
       case "instagram":
-        // Instagram doesn't have a direct share URL for videos, show a hint
         alert("Download the video first, then share it on Instagram Reels.")
         break
       case "tiktok":
@@ -142,155 +224,245 @@ export function PagePremiere() {
           Screening Room
         </h1>
         <p className="text-muted-foreground text-sm">
-          Preview, verify, and share your video with the world.
+          Preview, verify, and export your video with captions and language options.
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        {/* Video Player */}
-        <Card className="border-border bg-card">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-                <MonitorPlay className="size-4 text-teal-400" />
-                Video Player
-                {clips.length > 0 && (
-                  <span className="text-xs text-muted-foreground font-normal ml-1">
-                    Clip {activeClip + 1} of {clips.length}
-                  </span>
-                )}
-              </CardTitle>
-              <Badge
-                variant="outline"
-                className="text-green-400 border-green-500/30 bg-green-500/10"
-              >
-                <CheckCircle2 className="size-3 mr-1" />
-                Safety Cleared
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            {clips.length > 0 ? (
-              <>
-                {/* Actual video player */}
-                <div className="relative rounded-xl border border-border/40 overflow-hidden aspect-video bg-black w-full group">
-                  {currentClipSrc ? (
-                    <video
-                      ref={videoRef}
-                      key={currentClipSrc}
-                      src={currentClipSrc}
-                      className="w-full h-full object-contain"
-                      preload="auto"
-                      onEnded={handleClipEnd}
-                      onPlay={() => setIsPlaying(true)}
-                      onPause={() => setIsPlaying(false)}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="flex flex-col items-center gap-3 text-center p-6">
-                        <Film className="size-10 text-muted-foreground/40" />
-                        <p className="text-sm text-muted-foreground">
-                          Clip saved to disk — not available for browser playback
-                        </p>
-                      </div>
-                    </div>
+        {/* Left column */}
+        <div className="flex flex-col gap-4">
+          {/* Video Player */}
+          <Card className="border-border bg-card">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <MonitorPlay className="size-4 text-teal-400" />
+                  Video Player
+                  {clips.length > 0 && (
+                    <span className="text-xs text-muted-foreground font-normal ml-1">
+                      Clip {activeClip + 1} of {clips.length}
+                    </span>
                   )}
-                  {currentClipSrc && (
-                    <button
-                      onClick={handlePlayPause}
-                      className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-colors group"
-                    >
-                      {!isPlaying && (
-                        <div className="size-16 rounded-full bg-teal-500/20 backdrop-blur-sm flex items-center justify-center shadow-[0_0_20px_oklch(0.87_0.17_175/0.15)] opacity-80 group-hover:opacity-100 transition-opacity">
-                          <Play className="size-8 text-teal-400 ml-1" />
+                </CardTitle>
+                <Badge
+                  variant="outline"
+                  className="text-green-400 border-green-500/30 bg-green-500/10"
+                >
+                  <CheckCircle2 className="size-3 mr-1" />
+                  Safety Cleared
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              {clips.length > 0 ? (
+                <>
+                  {/* Video */}
+                  <div className="relative rounded-xl border border-border/40 overflow-hidden aspect-video bg-black w-full group">
+                    {currentClipSrc ? (
+                      <video
+                        ref={videoRef}
+                        key={currentClipSrc}
+                        src={currentClipSrc}
+                        className="w-full h-full object-contain"
+                        preload="auto"
+                        onEnded={handleClipEnd}
+                        onPlay={() => setIsPlaying(true)}
+                        onPause={() => setIsPlaying(false)}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-3 text-center p-6">
+                          <Film className="size-10 text-muted-foreground/40" />
+                          <p className="text-sm text-muted-foreground">
+                            Clip saved to disk — not available for browser playback
+                          </p>
                         </div>
-                      )}
-                    </button>
-                  )}
-                </div>
-
-                {/* Playback controls */}
-                <div className="flex items-center justify-between">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={activeClip === 0}
-                    onClick={() => setActiveClip(activeClip - 1)}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <ChevronLeft className="size-4" />
-                    Previous
-                  </Button>
-                  {currentClipSrc && (
-                    <Button variant="outline" size="sm" onClick={handlePlayPause} className="gap-2">
-                      {isPlaying ? <><Pause className="size-4" />Pause</> : <><Play className="size-4" />Play</>}
-                    </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={activeClip >= clips.length - 1}
-                    onClick={() => setActiveClip(activeClip + 1)}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Next
-                    <ChevronRight className="size-4" />
-                  </Button>
-                </div>
-
-                {/* Timeline */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex gap-1 w-full">
-                    {clips.map((clip, i) => {
-                      const scene = getSceneForClip(i)
-                      const isActive = i === activeClip
-                      const duration = scene?.duration || 8
-                      return (
-                        <button
-                          key={clip.segment_id ?? i}
-                          onClick={() => setActiveClip(i)}
-                          className={cn(
-                            "relative rounded-md transition-all duration-200 cursor-pointer min-w-[32px]",
-                            "hover:ring-1 hover:ring-teal-400/40",
-                            isActive
-                              ? "ring-2 ring-teal-400 bg-teal-500/20"
-                              : "bg-secondary/60 hover:bg-secondary"
-                          )}
-                          style={{ flex: duration }}
-                        >
-                          <div className="h-7 flex items-center justify-center">
-                            <span className={cn("text-[10px] font-semibold", isActive ? "text-teal-400" : "text-muted-foreground")}>
-                              {i + 1}
-                            </span>
+                      </div>
+                    )}
+                    {currentClipSrc && (
+                      <button
+                        onClick={handlePlayPause}
+                        className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-colors group"
+                      >
+                        {!isPlaying && (
+                          <div className="size-16 rounded-full bg-teal-500/20 backdrop-blur-sm flex items-center justify-center shadow-[0_0_20px_oklch(0.87_0.17_175/0.15)] opacity-80 group-hover:opacity-100 transition-opacity">
+                            <Play className="size-8 text-teal-400 ml-1" />
                           </div>
-                        </button>
-                      )
-                    })}
+                        )}
+                      </button>
+                    )}
                   </div>
-                  <div className="flex justify-between text-[10px] text-muted-foreground px-0.5">
-                    <span>0:00</span>
-                    <span>{Math.floor(totalDuration / 60)}:{(totalDuration % 60).toString().padStart(2, "0")}</span>
+
+                  {/* Playback controls */}
+                  <div className="flex items-center justify-between">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={activeClip === 0}
+                      onClick={() => setActiveClip(activeClip - 1)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <ChevronLeft className="size-4" />
+                      Previous
+                    </Button>
+                    {currentClipSrc && (
+                      <Button variant="outline" size="sm" onClick={handlePlayPause} className="gap-2">
+                        {isPlaying ? <><Pause className="size-4" />Pause</> : <><Play className="size-4" />Play</>}
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={activeClip >= clips.length - 1}
+                      onClick={() => setActiveClip(activeClip + 1)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Next
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  </div>
+
+                  {/* Timeline */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-1 w-full">
+                      {clips.map((clip, i) => {
+                        const scene = getSceneForClip(i)
+                        const isActive = i === activeClip
+                        const duration = scene?.duration || 8
+                        return (
+                          <button
+                            key={clip.segment_id ?? i}
+                            onClick={() => setActiveClip(i)}
+                            className={cn(
+                              "relative rounded-md transition-all duration-200 cursor-pointer min-w-[32px]",
+                              "hover:ring-1 hover:ring-teal-400/40",
+                              isActive
+                                ? "ring-2 ring-teal-400 bg-teal-500/20"
+                                : "bg-secondary/60 hover:bg-secondary"
+                            )}
+                            style={{ flex: duration }}
+                          >
+                            <div className="h-7 flex items-center justify-center">
+                              <span className={cn("text-[10px] font-semibold", isActive ? "text-teal-400" : "text-muted-foreground")}>
+                                {i + 1}
+                              </span>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <div className="flex justify-between text-[10px] text-muted-foreground px-0.5">
+                      <span>0:00</span>
+                      <span>{Math.floor(totalDuration / 60)}:{(totalDuration % 60).toString().padStart(2, "0")}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-xl bg-gradient-to-b from-secondary/40 to-secondary/20 border border-border/40 overflow-hidden aspect-video flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-3 text-center p-6">
+                    <Film className="size-10 text-muted-foreground/40" />
+                    <p className="text-foreground font-semibold">
+                      {factCheck.scam_name || "Your Video"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      No clips available. Generate clips in Clips Review first.
+                    </p>
                   </div>
                 </div>
-              </>
-            ) : (
-              /* No clips placeholder */
-              <div className="rounded-xl bg-gradient-to-b from-secondary/40 to-secondary/20 border border-border/40 overflow-hidden aspect-video flex items-center justify-center">
-                <div className="flex flex-col items-center gap-3 text-center p-6">
-                  <Film className="size-10 text-muted-foreground/40" />
-                  <p className="text-foreground font-semibold">
-                    {factCheck.scam_name || "Your Video"}
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Caption & Video Clip Language Selection */}
+          <Card className="border-border bg-card">
+            <CardContent className="pt-5">
+              <div className="grid grid-cols-2 gap-6">
+                {/* Caption Language (checkbox — no Veo needed) */}
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Subtitles className="size-4 text-muted-foreground" />
+                    Caption
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {LANGUAGES.map((lang) => (
+                      <label
+                        key={lang.code}
+                        className="flex items-center gap-2.5 cursor-pointer group"
+                      >
+                        <Checkbox
+                          checked={pendingCaptionLangs.includes(lang.code)}
+                          onCheckedChange={() => toggleCaption(lang.code)}
+                        />
+                        <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                          {lang.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {pendingCaptionLangs.length === 0
+                      ? "No captions selected"
+                      : `${pendingCaptionLangs.length} caption${pendingCaptionLangs.length > 1 ? "s" : ""} selected`}
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    No clips available. Generate clips in Clips Review first.
-                  </p>
+                </div>
+
+                {/* Video Clip Language (requires Veo regeneration) */}
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Video className="size-4 text-muted-foreground" />
+                    Video Clip
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        disabled={isRegenerating}
+                        onClick={() => setPendingClipLang(lang.code)}
+                        className={cn(
+                          "text-left text-sm px-3 py-1.5 rounded-md border transition-all",
+                          pendingClipLang === lang.code
+                            ? "border-primary/40 bg-primary/10 text-primary font-medium"
+                            : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border/80"
+                        )}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    size="sm"
+                    className="mt-1"
+                    disabled={isRegenerating || !sessionId || (!hasPendingLanguageChange && !hasPendingCaptionChanges)}
+                    onClick={handleRegenerateClipLanguage}
+                  >
+                    {isRegenerating ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      "Generate Video"
+                    )}
+                  </Button>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Export & Share */}
+              {regenError && (
+                <div className="mt-3 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-400">
+                  {regenError}
+                </div>
+              )}
+
+              {!isRegenerating && (hasPendingLanguageChange || hasPendingCaptionChanges) && (
+                <p className="mt-3 text-xs text-amber-300">
+                  Pending changes detected. Click Generate Video to apply them.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right column — Export & Share */}
         <div className="flex flex-col gap-6">
           <Card className="border-border bg-card">
             <CardHeader className="pb-3">
@@ -303,14 +475,24 @@ export function PagePremiere() {
               <Button
                 className="w-full"
                 size="lg"
-                disabled={clips.length === 0}
+                disabled={clips.length === 0 || isExporting}
                 onClick={handleDownload}
               >
-                <Download className="size-4" />
-                Download MP4
+                {isExporting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="size-4" />
+                    Download MP4
+                  </>
+                )}
               </Button>
               <p className="text-xs text-muted-foreground text-center">
                 {formatLabel}
+                {captionLangs.length > 0 && ` · ${captionLangs.length} caption${captionLangs.length > 1 ? "s" : ""}`}
               </p>
             </CardContent>
           </Card>

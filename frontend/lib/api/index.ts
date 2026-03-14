@@ -65,6 +65,7 @@ export {
   healthCheck,
   generateVideoAssets,
   getVideoAssetsStatus,
+  exportStitchedVideo,
   generatePreviewFrames,
   chatPreviewFrames,
   chatCharacterRefinement,

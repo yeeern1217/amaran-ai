@@ -49,13 +49,7 @@ interface Project {
   scamType: string
 }
 
-const PLACEHOLDER_PROJECTS: Project[] = [
-  { id: "p1", name: "APK Wedding Invitation Scam", date: "19 Feb 2026", status: "in-progress", scamType: "Phishing" },
-  { id: "p2", name: "Pos Laju Delivery Fraud", date: "15 Feb 2026", status: "completed", scamType: "Parcel Scam" },
-  { id: "p3", name: "Macau Scam Awareness", date: "10 Feb 2026", status: "completed", scamType: "Impersonation" },
-  { id: "p4", name: "TikTok Job Scam Alert", date: "5 Feb 2026", status: "draft", scamType: "Job Scam" },
-  { id: "p5", name: "Love Scam PSA — Valentine's", date: "1 Feb 2026", status: "completed", scamType: "Love Scam" },
-]
+const PLACEHOLDER_PROJECTS: Project[] = []
 
 // ─── Category colors ─────────────────────────────────────────────
 
@@ -350,6 +344,13 @@ export function PageLanding() {
               <CardContent className="p-0">
                 <ScrollArea className="max-h-[calc(100vh-340px)]">
                   <div className="flex flex-col divide-y divide-border/40">
+                    {PLACEHOLDER_PROJECTS.length === 0 && (
+                      <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                        <FolderOpen className="size-8 text-muted-foreground/40" />
+                        <p className="text-sm text-muted-foreground">No past projects yet</p>
+                        <p className="text-xs text-muted-foreground/60">Your completed campaigns will appear here</p>
+                      </div>
+                    )}
                     {PLACEHOLDER_PROJECTS.map((project) => (
                       <div
                         key={project.id}

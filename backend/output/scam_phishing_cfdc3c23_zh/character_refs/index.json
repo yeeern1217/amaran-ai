@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Aunty",
+    "description": "FULL BODY. A Malaysian Chinese female in her late 60s, with short, permed silver-grey hair, wearing a loose-fitting floral patterned blouse and comfortable dark blue cotton trousers with practical sandals. She is a full-bodied figure from head to toe.",
+    "filename": "Aunty_2x2_grid.png",
+    "path": "output\\scam_phishing_cfdc3c23_zh\\character_refs\\Aunty_2x2_grid.png"
+  },
+  {
+    "role": "Undercover Scammer",
+    "description": "FULL BODY. An anonymous and featureless human figure dressed in a matte black oversized hoodie and black cargo pants. The face is a void of darkness, and the figure wears thin glowing red lines on their wrists to indicate their technological nature.",
+    "filename": "Undercover_Scammer_2x2_grid.png",
+    "path": "output\\scam_phishing_cfdc3c23_zh\\character_refs\\Undercover_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Law Enforcement Narrator (Inspektor Amir)",
+    "description": "FULL BODY. A professional Malaysian male in his 30s, short neat hair, wearing a crisp dark blue Royal Malaysia Police (PDRM) uniform with a peaked cap and polished black boots. He is a full-bodied figure from head to toe.",
+    "filename": "Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_phishing_cfdc3c23_zh\\character_refs\\Law_Enforcement_Narrator_Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "Cyber-criminal (Remote Operator)",
+    "description": "FULL BODY. A featureless AI-robot-like silhouette composed of digital static and glitching blue pixels. The figure is seated in a stiff posture, lacking facial features or human skin texture, symbolizing a remote presence.",
+    "filename": "Cyber_criminal_Remote_Operator_2x2_grid.png",
+    "path": "output\\scam_phishing_cfdc3c23_zh\\character_refs\\Cyber_criminal_Remote_Operator_2x2_grid.png"
+  }
+]

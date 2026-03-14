@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY. A male Malaysian police inspector in his late 30s. He is wearing a crisp, dark blue Royal Malaysia Police (PDRM) service uniform with silver rank pips on the shoulders and a name tag. He has short, neat black hair and an authoritative, professional appearance. He is wearing black tactical trousers and polished black boots.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_impersonation_6cd09be4_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Elderly Victim",
+    "description": "FULL BODY. A Malaysian male in his late 60s. He has thinning grey hair and a gentle, slightly weathered face. He is wearing a traditional patterned batik shirt in soft blue tones, loose-fitting dark grey trousers, and brown leather sandals. He represents a vulnerable but dignified Malaysian senior citizen.",
+    "filename": "Elderly_Victim_2x2_grid.png",
+    "path": "output\\scam_impersonation_6cd09be4_en\\character_refs\\Elderly_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake MCMC Officer (Scammer)",
+    "description": "FULL BODY. A featureless, anonymous human silhouette glowing with a faint digital grid pattern. The figure is an opaque dark grey, lacking any facial features or skin texture. It wears a translucent, glitching digital headset to signify its role as a fraudulent caller.",
+    "filename": "Fake_MCMC_Officer_Scammer_2x2_grid.png",
+    "path": "output\\scam_impersonation_6cd09be4_en\\character_refs\\Fake_MCMC_Officer_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Fake Police Officer (Scammer)",
+    "description": "FULL BODY. A featureless, robotic humanoid figure with a matte metallic surface. The figure is entirely anonymous and lacks a face. It is distinguished by a red-glowing badge-like icon on its chest and digital artifacts hovering around its limbs to indicate its synthetic, fraudulent nature.",
+    "filename": "Fake_Police_Officer_Scammer_2x2_grid.png",
+    "path": "output\\scam_impersonation_6cd09be4_en\\character_refs\\Fake_Police_Officer_Scammer_2x2_grid.png"
+  }
+]

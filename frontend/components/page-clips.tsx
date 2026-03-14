@@ -333,7 +333,7 @@ export function PageClips() {
 
                     return (
                       <button
-                        key={clip.segment_id}
+                        key={`${clip.segment_id ?? clip.segment_index ?? i}-${i}`}
                         onClick={() => setActiveClip(i)}
                         className={cn(
                           "relative group/seg rounded-md transition-all duration-200 cursor-pointer min-w-[32px]",

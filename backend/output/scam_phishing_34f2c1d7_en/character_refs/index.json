@@ -1,0 +1,32 @@
+[
+  {
+    "role": "Inspektor Amir",
+    "description": "FULL BODY. A Malaysian male in his late 30s, athletic build, wearing a professional dark blue Royal Malaysia Police uniform with silver buttons, official badges, and a peak cap. Short black hair, clean-shaven, wearing black leather boots.",
+    "filename": "Inspektor_Amir_2x2_grid.png",
+    "path": "output\\scam_phishing_34f2c1d7_en\\character_refs\\Inspektor_Amir_2x2_grid.png"
+  },
+  {
+    "role": "Homeowner",
+    "description": "FULL BODY. A Malaysian woman in her 50s, Madam Lee, of Chinese descent, wearing a traditional red floral samfoo top and dark loose trousers. She has short permed hair and is wearing simple gold earrings and comfortable slippers.",
+    "filename": "Homeowner_2x2_grid.png",
+    "path": "output\\scam_phishing_34f2c1d7_en\\character_refs\\Homeowner_2x2_grid.png"
+  },
+  {
+    "role": "The Scammer",
+    "description": "FULL BODY. An anonymous, featureless human-shaped silhouette draped in a glitching digital texture. The figure is completely dark with glowing cyan binary code patterns coursing through its form, wearing a hooded jacket that hides any facial features.",
+    "filename": "The_Scammer_2x2_grid.png",
+    "path": "output\\scam_phishing_34f2c1d7_en\\character_refs\\The_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Bank Security Officer",
+    "description": "FULL BODY. A Malaysian man in his 30s wearing a professional white dress shirt, a navy blue tie, and formal black trousers. He has a clean-cut hairstyle and wears a silver wristwatch and black dress shoes.",
+    "filename": "Bank_Security_Officer_2x2_grid.png",
+    "path": "output\\scam_phishing_34f2c1d7_en\\character_refs\\Bank_Security_Officer_2x2_grid.png"
+  },
+  {
+    "role": "National Scam Response Centre Agent",
+    "description": "FULL BODY. A Malaysian woman in her late 20s wearing a corporate grey blazer over a black modest blouse and matching slacks. She has her hair tied back in a neat ponytail and is wearing professional black loafers.",
+    "filename": "National_Scam_Response_Centre_Agent_2x2_grid.png",
+    "path": "output\\scam_phishing_34f2c1d7_en\\character_refs\\National_Scam_Response_Centre_Agent_2x2_grid.png"
+  }
+]

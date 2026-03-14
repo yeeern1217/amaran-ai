@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Inspektor Siti (Law Enforcement Narrator)",
+    "description": "Full body portrait of a Malaysian female police officer in her early 30s. She wears a crisp, dark blue Royal Malaysia Police uniform with a black hijab tucked into the collar, silver duty badges on her chest, and a black utility belt. She is standing with a professional posture, wearing black tactical boots.",
+    "filename": "Inspektor_Siti_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_phishing_268c8f6f_en\\character_refs\\Inspektor_Siti_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Mak Cik Aminah (Elderly Victim)",
+    "description": "Full body portrait of an elderly Malaysian woman in her late 60s. She has a gentle face and wears spectacles. She is wearing a traditional floral Baju Kurung with a matching pastel-colored loose headscarf (tudung), simple sandals, and a small gold watch on her wrist.",
+    "filename": "Mak_Cik_Aminah_Elderly_Victim_2x2_grid.png",
+    "path": "output\\scam_phishing_268c8f6f_en\\character_refs\\Mak_Cik_Aminah_Elderly_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Scammer Agent (QR Code Phisher)",
+    "description": "Full body anonymous human figure standing in the shadows. A featureless, matte-black silhouette with no visible facial features. The figure is wearing a dark, oversized hoodie and cargo pants, with glowing blue circuit-pattern lines subtly tracing down the arms to represent a digital threat.",
+    "filename": "Scammer_Agent_QR_Code_Phisher_2x2_grid.png",
+    "path": "output\\scam_phishing_268c8f6f_en\\character_refs\\Scammer_Agent_QR_Code_Phisher_2x2_grid.png"
+  }
+]

@@ -641,6 +641,9 @@ class PipelineOrchestrator:
         scenes_dicts = [s.model_dump() for s in video_input.scenes]
         agent = self.visual_audio_agent
         agent._ensure_client()
+        # Reset agent in-memory state per request to avoid stale carry-over.
+        # Reuse should come only from pipeline.state.visual_audio below.
+        agent._state = VisualAudioPipelineState()
         agent._state.output_dir = str(base_dir)
         agent._state.video_format = video_input.meta_data.video_format
         
@@ -657,6 +660,8 @@ class PipelineOrchestrator:
                 agent._state.character_ref_images = existing_va_state.character_ref_images
             if existing_va_state.clip_ref_images:
                 agent._state.clip_ref_images = existing_va_state.clip_ref_images
+            if existing_va_state.clip_ref_prompts:
+                agent._state.clip_ref_prompts = existing_va_state.clip_ref_prompts
         
         import time as _time
         if self._state:
@@ -705,7 +710,14 @@ class PipelineOrchestrator:
         else:
             t0 = _time.time()
             logger.info("[VA-PIPELINE] Stage 3/%d — Generating character descriptions...", total_stages)
-            char_descs = await agent.generate_character_descriptions(story, script)
+            canonical_roles = None
+            if self._state and self._state.director_output and self._state.director_output.recommended_characters:
+                canonical_roles = self._state.director_output.recommended_characters
+            char_descs = await agent.generate_character_descriptions(
+                story,
+                script,
+                canonical_roles=canonical_roles,
+            )
             logger.info("[VA-PIPELINE] Stage 3/%d — Character descriptions done (%.1fs) — %d characters",
                         total_stages, _time.time() - t0, len(char_descs.characters))
         if stop_after == "characters":
@@ -713,9 +725,24 @@ class PipelineOrchestrator:
         
         # Stage 4: Character reference images
         if has_char_refs:
-            logger.info("[VA-PIPELINE] Stage 4/%d — Reusing existing character reference images (%d images)", 
-                        total_stages, len(agent._state.character_ref_images))
-            char_refs = agent._state.character_ref_images
+            # Check whether all characters have refs; regenerate only missing ones
+            expected_roles = {c.role for c in char_descs.characters}
+            existing_roles = {r.role for r in agent._state.character_ref_images}
+            missing_roles = expected_roles - existing_roles
+            if missing_roles:
+                t0 = _time.time()
+                logger.info("[VA-PIPELINE] Stage 4/%d — Regenerating %d missing character ref images (keeping %d)",
+                            total_stages, len(missing_roles), len(existing_roles & expected_roles))
+                char_refs = await agent.generate_character_ref_images(
+                    char_descs, base_dir / "character_refs",
+                    roles_to_regenerate=missing_roles,
+                )
+                logger.info("[VA-PIPELINE] Stage 4/%d — Character ref images done (%.1fs) — %d images total",
+                            total_stages, _time.time() - t0, len(char_refs))
+            else:
+                logger.info("[VA-PIPELINE] Stage 4/%d — Reusing existing character reference images (%d images)", 
+                            total_stages, len(agent._state.character_ref_images))
+                char_refs = agent._state.character_ref_images
         else:
             t0 = _time.time()
             logger.info("[VA-PIPELINE] Stage 4/%d — Generating character reference images...", total_stages)
@@ -729,9 +756,30 @@ class PipelineOrchestrator:
         
         # Stage 5: Clip reference frames
         if has_clip_refs:
-            logger.info("[VA-PIPELINE] Stage 5/%d — Reusing existing clip reference frames (%d frames)", 
-                        total_stages, len(agent._state.clip_ref_images))
-            clip_refs = agent._state.clip_ref_images
+            # Check whether all segments have BOTH start+end clip refs
+            expected_seg_ids = {s.segment_index for s in script.segments}
+            frames_per_seg: Dict[int, set] = {}
+            for e in agent._state.clip_ref_images:
+                frames_per_seg.setdefault(e.segment_index, set()).add(e.frame)
+            complete_seg_ids = {
+                sid for sid, frames in frames_per_seg.items()
+                if {"start", "end"} <= frames
+            }
+            missing_seg_ids = expected_seg_ids - complete_seg_ids
+            if missing_seg_ids:
+                t0 = _time.time()
+                logger.info("[VA-PIPELINE] Stage 5/%d — Regenerating clip refs for %d missing/incomplete segments (keeping %d)",
+                            total_stages, len(missing_seg_ids), len(complete_seg_ids & expected_seg_ids))
+                clip_refs = await agent.generate_clip_ref_frames(
+                    script, char_refs, base_dir / "clip_refs",
+                    segments_to_regenerate=missing_seg_ids,
+                )
+                logger.info("[VA-PIPELINE] Stage 5/%d — Clip ref frames done (%.1fs) — %d frames total",
+                            total_stages, _time.time() - t0, len(clip_refs))
+            else:
+                logger.info("[VA-PIPELINE] Stage 5/%d — Reusing existing clip reference frames (%d frames)", 
+                            total_stages, len(agent._state.clip_ref_images))
+                clip_refs = agent._state.clip_ref_images
         else:
             t0 = _time.time()
             logger.info("[VA-PIPELINE] Stage 5/%d — Generating clip reference frames...", total_stages)

@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY. A male Malaysian police officer in his late 30s. He wears a sharp, formal dark blue Royal Malaysia Police (PDRM) uniform with silver buttons, visible insignia on the shoulders, and a matching peaked cap. He has a clean-cut appearance with short black hair and a groomed mustache. He is wearing polished black leather boots.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_phishing_a2990cf7_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Elderly Victim (Victim)",
+    "description": "FULL BODY. An elderly Malaysian man in his late 60s. He has silver-grey hair and wears a traditional short-sleeved batik shirt with a modern geometric pattern in shades of red. He wears loose-fitting dark trousers and simple leather sandals. He has a kind, gentle face with visible wrinkles around the eyes.",
+    "filename": "Elderly_Victim_Victim_2x2_grid.png",
+    "path": "output\\scam_phishing_a2990cf7_en\\character_refs\\Elderly_Victim_Victim_2x2_grid.png"
+  },
+  {
+    "role": "QR Code Scammer (Antagonist)",
+    "description": "FULL BODY. A featureless, anonymous human silhouette representing a digital threat. The figure is solid matte black with a faint glowing blue circuit-pattern outline pulsing across the torso. The figure has no facial features and is wearing a dark, nondescript hooded cloak that obscures any physical form.",
+    "filename": "QR_Code_Scammer_Antagonist_2x2_grid.png",
+    "path": "output\\scam_phishing_a2990cf7_en\\character_refs\\QR_Code_Scammer_Antagonist_2x2_grid.png"
+  }
+]

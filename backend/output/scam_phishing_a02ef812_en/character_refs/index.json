@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY: A Malaysian male police officer in his late 30s. He wears a sharp, official dark blue Royal Malaysia Police (PDRM) uniform, complete with a silver badge, rank insignia on the shoulders, and a tactical belt. He has short, neat black hair and a clean-shaven face. He wears black polished tactical boots.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_phishing_a02ef812_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Elderly Victim",
+    "description": "FULL BODY: An elderly Malaysian man in his late 60s. He has short, thinning grey hair and a gentle face. He is wearing a traditional red batik shirt with intricate patterns, khaki trousers, and dark brown sandals. He has a slender build and is seen from head to toe.",
+    "filename": "Elderly_Victim_2x2_grid.png",
+    "path": "output\\scam_phishing_a02ef812_en\\character_refs\\Elderly_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Ang Pow Scammer",
+    "description": "FULL BODY: An anonymous, featureless human-shaped silhouette that appears to be made of dark, swirling digital smoke and glitching code. The figure is solid black but has glowing red digital lines tracing where its eyes and joints would be. It wears a non-descript dark hooded jacket that blends into its shadowy form.",
+    "filename": "Ang_Pow_Scammer_2x2_grid.png",
+    "path": "output\\scam_phishing_a02ef812_en\\character_refs\\Ang_Pow_Scammer_2x2_grid.png"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY. A male Malaysian police officer in his late 30s. He has a clean-shaven face and short, neat black hair. He is wearing a formal dark blue Royal Malaysia Police (PDRM) uniform with silver buttons, official badges on the chest, and matching dark blue trousers. He is standing upright with a professional and authoritative posture.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_impersonation_27a898a3_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Puan Aminah (Scam Victim)",
+    "description": "FULL BODY. An elderly Malaysian woman in her late 60s with a kind, weathered face. She is wearing a traditional light blue Baju Kurung with a modest floral pattern and a matching cream-colored tudung (headscarf). She wears simple leather sandals. Her figure is slightly hunched, reflecting her retired status.",
+    "filename": "Puan_Aminah_Scam_Victim_2x2_grid.png",
+    "path": "output\\scam_impersonation_27a898a3_en\\character_refs\\Puan_Aminah_Scam_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake Recovery Agent (Scammer)",
+    "description": "FULL BODY. A featureless, anonymous human silhouette made of dark, glitchy digital noise. The figure has no facial features. It wears a translucent, holographic business suit overlay to mimic a professional appearance. One arm glows with a faint, pulsing red light to distinguish it as a predatory entity.",
+    "filename": "Fake_Recovery_Agent_Scammer_2x2_grid.png",
+    "path": "output\\scam_impersonation_27a898a3_en\\character_refs\\Fake_Recovery_Agent_Scammer_2x2_grid.png"
+  }
+]

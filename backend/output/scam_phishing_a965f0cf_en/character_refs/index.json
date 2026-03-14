@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY: A Malaysian male in his late 30s, athletic build, wearing a crisp dark blue Polis Diraja Malaysia (PDRM) uniform with silver buttons and insignia on the shoulders. He has short, neat black hair and a clean-shaven face. He wears black polished leather boots and a tactical belt.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_phishing_a965f0cf_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Elderly Victim",
+    "description": "FULL BODY: A Malaysian Chinese man in his late 60s, slender build with silver-grey hair and spectacles. He is wearing a simple light-colored polo shirt, dark trousers, and comfortable sneakers.",
+    "filename": "Elderly_Victim_2x2_grid.png",
+    "path": "output\\scam_phishing_a965f0cf_en\\character_refs\\Elderly_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Ang Pow Scammer",
+    "description": "FULL BODY: An anonymous human figure appearing as a featureless pitch-black silhouette. The figure has glowing red digital circuit patterns tracing across its chest and limbs, giving it a robotic AI-glitch aesthetic. The silhouette is wearing a translucent, shadowy hooded cloak.",
+    "filename": "Ang_Pow_Scammer_2x2_grid.png",
+    "path": "output\\scam_phishing_a965f0cf_en\\character_refs\\Ang_Pow_Scammer_2x2_grid.png"
+  }
+]

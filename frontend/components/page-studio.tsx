@@ -44,7 +44,7 @@ function parseVideoLength(videoLength: string): number {
 }
 
 export function PageStudio() {
-  const { sessionId, config, setConfig, factCheck, scenes, setScenes, scenesGenerated, setScenesGenerated, setSensitivityReport, sensitivityReport, setCurrentStep, setRecommendedAvatars, recommendedCharacters, setRecommendedCharacters, setCharacterInfoList } = useApp()
+  const { sessionId, config, setConfig, factCheck, scenes, setScenes, scenesGenerated, setScenesGenerated, setSensitivityReport, sensitivityReport, setCurrentStep, setRecommendedAvatars, recommendedCharacters, setRecommendedCharacters, characterInfoList, setCharacterInfoList } = useApp()
   const [activeScene, setActiveScene] = useState(0)
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [chatHistory, setChatHistory] = useState<BackendChatMessage[]>([])
@@ -373,6 +373,37 @@ export function PageStudio() {
           duration: s.duration_est_seconds ?? 8,
         }))
         setScenes(updatedScenes)
+
+        const updatedRoles = result.director_output.recommended_characters || []
+        if (updatedRoles.length > 0) {
+          setRecommendedCharacters(updatedRoles)
+          if (result.character_descriptions && result.character_descriptions.length > 0) {
+            setCharacterInfoList(result.character_descriptions.map((c) => ({
+              role: c.role,
+              type: c.type,
+              description: c.description,
+              imageUrl: c.image_url,
+              imageBase64: c.image_base64,
+            })))
+          } else {
+            const byRole = new Map(characterInfoList.map((c) => [c.role, c]))
+            const syncedInfo = updatedRoles.map((role) => {
+              const existing = byRole.get(role)
+              if (existing) return existing
+              const lower = role.toLowerCase()
+              const isPersonRole = lower.includes("victim") || lower.includes("retiree") || lower.includes("narrator") || lower.includes("officer") || lower.includes("inspektor") || lower.includes("inspector") || lower.includes("law enforcement") || lower.includes("police") || lower.includes("parent") || lower.includes("elderly") || lower.includes("teacher") || lower.includes("student")
+              return {
+                role,
+                type: isPersonRole ? "person" as const : "scammer" as const,
+                description: "",
+                imageUrl: null,
+                imageBase64: null,
+              }
+            })
+            setCharacterInfoList(syncedInfo)
+          }
+        }
+
         // Re-run safety review after scenes change
         setSafetyReviewing(true)
         setSafetyExpanded(true)

@@ -110,6 +110,7 @@ export interface ChatResponse {
   director_output?: {
     project_id: string;
     master_script: string;
+    recommended_characters?: string[];
     scene_breakdown: Array<{
       scene_id?: number;
       visual_prompt?: string;
@@ -123,6 +124,13 @@ export interface ChatResponse {
     creative_notes?: string;
   };
   video_package?: unknown;
+  character_descriptions?: Array<{
+    role: string;
+    type: "person" | "scammer";
+    description: string;
+    image_url: string | null;
+    image_base64: string | null;
+  }>;
   updated: boolean;
   changes_applied?: Record<string, unknown>;
 }
@@ -722,6 +730,29 @@ export async function getVideoAssetsStatus(
   sessionId: string
 ): Promise<VideoAssetsStatusResponse> {
   return fetchApi<VideoAssetsStatusResponse>(`/video-assets/${sessionId}`);
+}
+
+/**
+ * Export a stitched MP4 video from all clips, optionally with burnt-in captions.
+ * Returns a Blob of the video file.
+ */
+export async function exportStitchedVideo(
+  sessionId: string,
+  captionLanguages: string[] = []
+): Promise<Blob> {
+  const res = await fetch(`${API_BASE}/export/video`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      session_id: sessionId,
+      caption_languages: captionLanguages,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || "Export failed");
+  }
+  return res.blob();
 }
 
 // ==================== Trending News (Serper) ====================

@@ -378,18 +378,60 @@ PROFESSIONALS:
         
         return json_str
 
+    def _strip_json_comments(self, json_str: str) -> str:
+        """Remove comment-only lines that sometimes leak from prompt examples."""
+        lines = json_str.splitlines()
+        cleaned_lines = []
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("//"):
+                continue
+            cleaned_lines.append(line)
+        return "\n".join(cleaned_lines)
+
+    def _repair_common_json_syntax(self, json_str: str) -> str:
+        """Repair common LLM JSON syntax mistakes without changing semantic content."""
+        repaired = json_str
+
+        # Insert missing colon between object key and value:
+        # "key" "value"  ->  "key": "value"
+        # "key" { ... }   ->  "key": { ... }
+        repaired = re.sub(
+            r'("(?:[^"\\]|\\.)*")\s+(?=("|\{|\[|-?\d|true|false|null))',
+            r'\1: ',
+            repaired,
+            flags=re.IGNORECASE,
+        )
+
+        # Remove trailing commas again after rewrites.
+        repaired = re.sub(r',\s*([}\]])', r'\1', repaired)
+        return repaired
+
     def parse_response(self, response: str, input_data: DirectorInput) -> DirectorOutput:
         """Parse LLM response into DirectorOutput."""
         try:
             cleaned = self._extract_json_from_response(response)
-            
-            try:
-                data = json.loads(cleaned)
-            except json.JSONDecodeError as e:
-                # Try to fix truncated JSON
-                self.logger.warning(f"Initial JSON parse failed: {e}. Attempting to fix truncated JSON...")
-                fixed = self._fix_truncated_json(cleaned)
-                data = json.loads(fixed)
+
+            attempts = [
+                ("raw", cleaned),
+                ("comments_stripped", self._strip_json_comments(cleaned)),
+                ("truncation_fix", self._fix_truncated_json(self._strip_json_comments(cleaned))),
+                ("syntax_repair", self._repair_common_json_syntax(self._fix_truncated_json(self._strip_json_comments(cleaned)))),
+            ]
+
+            data = None
+            last_json_error: Optional[json.JSONDecodeError] = None
+            for label, candidate in attempts:
+                try:
+                    data = json.loads(candidate)
+                    if label != "raw":
+                        self.logger.warning("Director JSON recovered via %s", label)
+                    break
+                except json.JSONDecodeError as e:
+                    last_json_error = e
+
+            if data is None:
+                raise last_json_error or json.JSONDecodeError("Unknown JSON parse error", cleaned, 0)
             
             return DirectorOutput(
                 project_id=data["project_id"],
@@ -425,6 +467,14 @@ PROFESSIONALS:
             try:
                 # Build and send prompt
                 prompt = self.build_prompt(input_data)
+                if attempt > 0:
+                    prompt += (
+                        "\n\nIMPORTANT RETRY INSTRUCTIONS:\n"
+                        "- Output must be STRICT JSON only (RFC 8259).\n"
+                        "- No comments, no markdown fences, no explanatory text.\n"
+                        "- Ensure every object key has a colon and values are comma-delimited.\n"
+                        "- Ensure valid escaping for newlines and quotes inside strings.\n"
+                    )
                 system_prompt = self._get_system_prompt()
                 
                 response = await self._call_llm(prompt, system_prompt)

@@ -21,7 +21,7 @@ import os
 import re
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
@@ -339,6 +339,7 @@ class VisualAudioAgent(BaseAgent):
         self,
         story: ObfuscatedScamStory,
         script: VeoScript,
+        canonical_roles: Optional[List[str]] = None,
     ) -> CharacterDescriptions:
         """Generate per-character visual descriptions for image generation."""
         script_lines = [f"Video: {script.title}", f"Total segments: {len(script.segments)}", ""]
@@ -354,6 +355,10 @@ class VisualAudioAgent(BaseAgent):
             "(2) the obfuscated scam story and character roles. ALWAYS describe each character as FULL BODY "
             "(full figure, head to toe). Each character must have ONE consistent outfit and look for the "
             "ENTIRE video. All characters are for a MALAYSIAN audience.\n\n"
+            "If CANONICAL ROLES are provided, you MUST output exactly those roles with exactly the same labels "
+            "and the same count. Do NOT rename, merge, split, or invent roles. If a role label includes age "
+            "or persona hints (e.g., 'Elderly Victim', 'Young Adult Victim'), preserve that intent exactly "
+            "in the visual description.\n\n"
             "For type 'person' (victims, authorities, bystanders): FULL BODY figure—Malaysian ethnicity, "
             "age range, hair, ONE consistent attire. No emotions/setting/actions/props.\n\n"
             "For type 'scammer' (perpetrators, AI/voice-cloned): always type 'scammer'. NEVER a real person. "
@@ -361,18 +366,47 @@ class VisualAudioAgent(BaseAgent):
             "Give each scammer 1-2 differentiating traits."
         )
 
+        canonical_roles_block = ""
+        if canonical_roles:
+            canonical_roles_block = "\n".join(f"- {r}" for r in canonical_roles)
+
         user = (
             f"Generate character descriptions for the video below.\n\n"
             f"--- Video script ---\n{script_summary}\n"
             f"--- Obfuscated story ---\n{story.story}\n\n"
             f"--- Character roles ---\n"
             + "\n".join(f"- {r}" for r in story.character_roles)
+            + (f"\n\n--- CANONICAL ROLES (MUST MATCH EXACTLY) ---\n{canonical_roles_block}" if canonical_roles_block else "")
         )
 
         raw = await self._call_flash_json(
             system, user, CharacterDescriptions.model_json_schema()
         )
         descs = CharacterDescriptions.model_validate_json(raw)
+
+        # Enforce canonical role set/order when provided to prevent role drift.
+        if canonical_roles:
+            desc_by_role = {c.role: c for c in descs.characters}
+            normalized_chars: List[CharacterDescription] = []
+            for role in canonical_roles:
+                existing = desc_by_role.get(role)
+                if existing is not None:
+                    normalized_chars.append(existing)
+                    continue
+                lower = role.lower()
+                inferred_type = "scammer" if any(
+                    k in lower for k in ["scammer", "fraud", "fake", "caller", "syndicate", "agent"]
+                ) else "person"
+                normalized_chars.append(CharacterDescription(
+                    role=role,
+                    type=inferred_type,
+                    description_for_image_generation=(
+                        f"Full-body Malaysian {'anonymous scammer silhouette' if inferred_type == 'scammer' else 'person'} "
+                        f"representing role '{role}', with a single consistent outfit across all scenes."
+                    ),
+                ))
+            descs = CharacterDescriptions(characters=normalized_chars)
+
         self._state.character_descriptions = descs
         logger.info("Stage 3 done: %d character descriptions", len(descs.characters))
         return descs
@@ -384,12 +418,33 @@ class VisualAudioAgent(BaseAgent):
         self,
         descs: CharacterDescriptions,
         out_dir: Path,
+        roles_to_regenerate: Optional[Set[str]] = None,
     ) -> List[CharacterRefImage]:
-        """Generate a 2×2 reference grid per character via Nano Banana."""
+        """Generate a 2×2 reference grid per character via Nano Banana.
+
+        Args:
+            roles_to_regenerate: If provided, only regenerate images for these
+                roles and keep existing images for all other roles.
+        """
         out_dir.mkdir(parents=True, exist_ok=True)
+
+        # Build lookup of existing images to preserve unchanged roles
+        existing_by_role: Dict[str, CharacterRefImage] = {}
+        if roles_to_regenerate is not None and self._state.character_ref_images:
+            for img in self._state.character_ref_images:
+                if img.role not in roles_to_regenerate:
+                    existing_by_role[img.role] = img
+
         index: List[CharacterRefImage] = []
 
         for char in descs.characters:
+            # Keep existing image for unchanged roles
+            if roles_to_regenerate is not None and char.role not in roles_to_regenerate:
+                if char.role in existing_by_role:
+                    index.append(existing_by_role[char.role])
+                    logger.info("Keeping existing ref image for %s", char.role)
+                continue
+
             safe_name = re.sub(r"[^a-zA-Z0-9]+", "_", char.role).strip("_")
             filename = f"{safe_name}_2x2_grid.png"
             path = out_dir / filename
@@ -397,7 +452,7 @@ class VisualAudioAgent(BaseAgent):
 
             # Run sync image gen in executor to not block event loop
             img = await asyncio.get_event_loop().run_in_executor(
-                None, lambda: self._call_image_sync(prompt, aspect_ratio="1:1", image_size="1K")
+                None, lambda p=prompt: self._call_image_sync(p, aspect_ratio="1:1", image_size="1K")
             )
             if img is not None:
                 img.save(path)
@@ -417,7 +472,8 @@ class VisualAudioAgent(BaseAgent):
         (out_dir / "index.json").write_text(json.dumps(index_data, indent=2), encoding="utf-8")
 
         self._state.character_ref_images = index
-        logger.info("Stage 4 done: %d character ref images", len(index))
+        mode = "selective" if roles_to_regenerate else "full"
+        logger.info("Stage 4 done: %d character ref images (%s)", len(index), mode)
         return index
 
     # ------------------------------------------------------------------
@@ -428,40 +484,72 @@ class VisualAudioAgent(BaseAgent):
         script: VeoScript,
         char_refs: List[CharacterRefImage],
         out_dir: Path,
+        segments_to_regenerate: Optional[Set[int]] = None,
     ) -> List[ClipRefEntry]:
-        """Generate start/end frames for each segment for Veo interpolation."""
+        """Generate start/end frames for each segment for Veo interpolation.
+
+        Args:
+            segments_to_regenerate: If provided, only regenerate frames for
+                these segment indices and keep existing frames for all others.
+        """
         out_dir.mkdir(parents=True, exist_ok=True)
         role_to_path = {r.role: Path(r.path) for r in char_refs}
 
-        # Build full script text for context
+        # Build full script text for context (always uses complete script)
         full_script_text = _build_full_script_text(script)
 
-        # Step 5a: Generate prompts
-        clip_prompts: List[Dict[str, Any]] = []
-        for seg in script.segments:
+        # Determine which segments to process
+        if segments_to_regenerate is not None:
+            segments_to_process = [
+                s for s in script.segments
+                if s.segment_index in segments_to_regenerate
+            ]
+            # Preserve existing data for unchanged segments
+            existing_prompts = {
+                p["segment_index"]: p
+                for p in self._state.clip_ref_prompts
+                if p.get("segment_index") not in segments_to_regenerate
+            }
+            existing_entries = [
+                e for e in self._state.clip_ref_images
+                if e.segment_index not in segments_to_regenerate
+            ]
+        else:
+            segments_to_process = list(script.segments)
+            existing_prompts = {}
+            existing_entries = []
+
+        # Step 5a: Generate prompts for target segments
+        new_prompts: List[Dict[str, Any]] = []
+        for seg in segments_to_process:
+            seg_chars = ", ".join(seg.characters_involved) if seg.characters_involved else "(none)"
             frame_input = (
                 f"{full_script_text}\n\n"
                 f"Output start and end frame prompts for **segment {seg.segment_index}** only. "
+                f"Characters that MUST appear at least once across these two frames: {seg_chars}. "
                 "Think about continuity and flow."
             )
             raw = await self._call_flash_json(
                 _CLIP_REF_SYSTEM, frame_input, ClipRefFramePrompts.model_json_schema(), thinking="high"
             )
             prompts = ClipRefFramePrompts.model_validate_json(raw)
-            clip_prompts.append({
+            new_prompts.append({
                 "segment_index": seg.segment_index,
                 "start_frame_prompt": prompts.start_frame_prompt,
                 "end_frame_prompt": prompts.end_frame_prompt,
             })
             logger.info("Clip ref prompts generated for segment %d", seg.segment_index)
 
-        self._state.clip_ref_prompts = clip_prompts
+        # Merge prompts: existing unchanged + newly generated
+        all_prompts = list(existing_prompts.values()) + new_prompts
+        all_prompts.sort(key=lambda p: p["segment_index"])
+        self._state.clip_ref_prompts = all_prompts
 
-        # Step 5b: Generate images
-        clip_entries: List[ClipRefEntry] = []
+        # Step 5b: Generate images for target segments
+        new_entries: List[ClipRefEntry] = []
         seg_by_idx = {s.segment_index: s for s in script.segments}
 
-        for entry in clip_prompts:
+        for entry in new_prompts:
             seg_idx = entry["segment_index"]
             seg = seg_by_idx.get(seg_idx)
             if not seg:
@@ -483,6 +571,7 @@ class VisualAudioAgent(BaseAgent):
                 )
             start_text = (
                 f"Create the START frame for this clip. {start_prompt} "
+                f"Characters that MUST appear at least once across START+END for this segment: {', '.join(seg.characters_involved)}. "
                 "IMPORTANT: Any featureless/anonymous humanoid must remain featureless. No text in image."
             )
             parts = _build_clip_start_parts(char_paths, start_text, prev_end_path)
@@ -495,7 +584,7 @@ class VisualAudioAgent(BaseAgent):
             )
             if img is not None:
                 img.save(start_path)
-                clip_entries.append(ClipRefEntry(
+                new_entries.append(ClipRefEntry(
                     segment_index=seg_idx, frame="start",
                     filename=start_path.name, path=str(start_path),
                 ))
@@ -504,11 +593,12 @@ class VisualAudioAgent(BaseAgent):
             # End frame (uses start frame as reference)
             if start_path.exists():
                 end_text = (
-                    f"Using the provided reference image (start frame), create the END frame: "
+                    f"Using the provided reference images (start frame + character reference image(s)), create the END frame: "
                     f"{entry['end_frame_prompt']} "
+                    f"Characters that MUST appear at least once across START+END for this segment: {', '.join(seg.characters_involved)}. "
                     "IMPORTANT: Keep any featureless humanoid characters as-is. No text in image."
                 )
-                end_parts = _build_clip_end_parts(start_path, end_text)
+                end_parts = _build_clip_end_parts(start_path, char_paths, end_text)
                 end_path = out_dir / f"segment_{seg_idx}_end.png"
 
                 img = await asyncio.get_event_loop().run_in_executor(
@@ -517,19 +607,25 @@ class VisualAudioAgent(BaseAgent):
                 )
                 if img is not None:
                     img.save(end_path)
-                    clip_entries.append(ClipRefEntry(
+                    new_entries.append(ClipRefEntry(
                         segment_index=seg_idx, frame="end",
                         filename=end_path.name, path=str(end_path),
                     ))
                     logger.info("Saved %s", end_path)
 
+        # Merge entries: existing unchanged + newly generated
+        all_entries = existing_entries + new_entries
+        all_entries.sort(key=lambda e: (e.segment_index, 0 if e.frame == "start" else 1))
+
         # Save index
-        index_data = [e.model_dump() for e in clip_entries]
+        index_data = [e.model_dump() for e in all_entries]
         (out_dir / "index.json").write_text(json.dumps(index_data, indent=2), encoding="utf-8")
 
-        self._state.clip_ref_images = clip_entries
-        logger.info("Stage 5 done: %d clip ref frames", len(clip_entries))
-        return clip_entries
+        self._state.clip_ref_images = all_entries
+        mode = "selective" if segments_to_regenerate else "full"
+        logger.info("Stage 5 done: %d clip ref frames (%s, %d regenerated)",
+                    len(all_entries), mode, len(new_entries))
+        return all_entries
 
     # ------------------------------------------------------------------
     # Stage 6: Veo video generation
@@ -666,13 +762,17 @@ def _build_clip_start_parts(
     return parts
 
 
-def _build_clip_end_parts(start_frame: Path, prompt_text: str) -> list:
+def _build_clip_end_parts(start_frame: Path, char_paths: List[Path], prompt_text: str) -> list:
     data = start_frame.read_bytes()
     mime = "image/png" if start_frame.suffix.lower() == ".png" else "image/jpeg"
-    return [
-        types.Part(inline_data=types.Blob(data=data, mime_type=mime)),
-        types.Part(text=prompt_text),
-    ]
+    parts = [types.Part(inline_data=types.Blob(data=data, mime_type=mime))]
+    for p in char_paths:
+        if p.exists():
+            c_data = p.read_bytes()
+            c_mime = "image/png" if p.suffix.lower() == ".png" else "image/jpeg"
+            parts.append(types.Part(inline_data=types.Blob(data=c_data, mime_type=c_mime)))
+    parts.append(types.Part(text=prompt_text))
+    return parts
 
 
 def _load_veo_image(path: Optional[Path]):
@@ -719,7 +819,9 @@ _CLIP_REF_SYSTEM = """You are given the **full video script** (all segments). Ou
 
 1. **start_frame_prompt**: Used with character reference images. Describe scene/setting, camera/shot, lighting, character pose/expression. Include "Using the provided character reference image(s), place [character] in the following scene: ..." For scammer/featureless characters: explicitly state they must remain featureless. One still image, no motion, no text.
 
-2. **end_frame_prompt**: Used with start frame image as reference. Same setting, new pose/expression. Progression must feel like one continuous flow. Scammers remain featureless. One still image, no motion, no text."""
+2. **end_frame_prompt**: Used with start frame image AND character reference images as references. Same setting, new pose/expression. Progression must feel like one continuous flow. Scammers remain featureless. One still image, no motion, no text.
+
+3. Character coverage constraint: every listed character for the segment must appear at least once across the pair (start frame + end frame)."""
 
 
 # Factory

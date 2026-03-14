@@ -7,6 +7,57 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Loader2, Send, Sparkles } from "lucide-react"
 
+// ── Inline markdown renderer (no external dependency) ──────────────────────
+function parseInline(text: string): ReactNode {
+  const parts: ReactNode[] = []
+  const regex = /\*\*([^*]+)\*\*|\*([^*]+)\*/g
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+  let key = 0
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index))
+    if (match[1] !== undefined) parts.push(<strong key={key++}>{match[1]}</strong>)
+    else if (match[2] !== undefined) parts.push(<em key={key++}>{match[2]}</em>)
+    lastIndex = match.index + match[0].length
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex))
+  return parts.length === 0 ? text : <>{parts}</>
+}
+
+function renderMarkdown(text: string): ReactNode {
+  const lines = text.split("\n")
+  const result: ReactNode[] = []
+  lines.forEach((line, i) => {
+    if (line.trim() === "") {
+      result.push(<br key={`e-${i}`} />)
+      return
+    }
+    const numMatch = line.match(/^(\d+)[.)\s]\s*(.+)$/)
+    if (numMatch) {
+      result.push(
+        <div key={i} className="flex gap-1.5">
+          <span className="shrink-0 font-medium">{numMatch[1]}.</span>
+          <span>{parseInline(numMatch[2])}</span>
+        </div>
+      )
+      return
+    }
+    const bulletMatch = line.match(/^[-*•]\s+(.+)$/)
+    if (bulletMatch) {
+      result.push(
+        <div key={i} className="flex gap-1.5">
+          <span className="shrink-0">•</span>
+          <span>{parseInline(bulletMatch[1])}</span>
+        </div>
+      )
+      return
+    }
+    result.push(<span key={i}>{parseInline(line)}</span>)
+    if (i < lines.length - 1) result.push(<br key={`br-${i}`} />)
+  })
+  return <>{result}</>
+}
+
 export interface ChatMessage {
   role: "user" | "ai"
   text: string
@@ -74,13 +125,13 @@ export function ChatPanel({
             <div
               key={idx}
               className={cn(
-                "rounded-lg px-3 py-2 text-sm max-w-[85%] break-words overflow-hidden whitespace-pre-wrap",
+                "rounded-lg px-3 py-2 text-sm max-w-[85%] break-words overflow-hidden",
                 msg.role === "user"
-                  ? "bg-cyan-500/90 text-white self-end shadow-[0_2px_10px_oklch(0.60_0.14_200/0.15)]"
+                  ? "bg-cyan-500/90 text-white self-end shadow-[0_2px_10px_oklch(0.60_0.14_200/0.15)] whitespace-pre-wrap"
                   : "bg-secondary/80 text-foreground self-start backdrop-blur-sm",
               )}
             >
-              {msg.text}
+              {msg.role === "ai" ? renderMarkdown(msg.text) : msg.text}
             </div>
           ))}
           {isLoading && (
