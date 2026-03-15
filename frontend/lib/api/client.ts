@@ -895,3 +895,83 @@ export async function getSocialStrategy(
 ): Promise<SocialGenerateResponse> {
   return fetchApi<SocialGenerateResponse>(`/social/${sessionId}`);
 }
+
+// ==================== Project / Firestore Types ====================
+
+export interface FirestoreProject {
+  project_id: string;
+  owner_uid: string;
+  name: string;
+  scam_type: string;
+  status: "draft" | "in-progress" | "completed";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectsListResponse {
+  projects: FirestoreProject[];
+}
+
+// ==================== Auth-aware fetch helper ====================
+
+async function fetchApiAuth<T>(
+  endpoint: string,
+  token: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${API_BASE}${endpoint}`;
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...options.headers,
+    },
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new ApiError(
+      response.status,
+      errorData.detail || `API error: ${response.status}`
+    );
+  }
+  return response.json();
+}
+
+// ==================== Project CRUD ====================
+
+export async function listProjects(token: string): Promise<ProjectsListResponse> {
+  return fetchApiAuth<ProjectsListResponse>("/projects", token);
+}
+
+export async function saveProject(
+  token: string,
+  body: {
+    project_id: string;
+    name: string;
+    scam_type?: string;
+    status?: string;
+    data?: Record<string, unknown>;
+  }
+): Promise<{ project_id: string; message: string }> {
+  return fetchApiAuth("/projects", token, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function getProject(
+  token: string,
+  projectId: string
+): Promise<FirestoreProject & { data: Record<string, unknown> }> {
+  return fetchApiAuth(`/projects/${encodeURIComponent(projectId)}`, token);
+}
+
+export async function deleteProject(
+  token: string,
+  projectId: string
+): Promise<{ message: string }> {
+  return fetchApiAuth(`/projects/${encodeURIComponent(projectId)}`, token, {
+    method: "DELETE",
+  });
+}

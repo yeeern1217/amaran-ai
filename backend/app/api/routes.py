@@ -2389,6 +2389,70 @@ async def get_social_strategy(session_id: str):
     )
 
 
+# ==================== PROJECT CRUD (Firestore) ENDPOINTS ====================
+
+from ..auth import get_current_user
+from ..database import ProjectRecord, save_project, list_projects, get_project, delete_project
+from fastapi import Depends
+
+
+class SaveProjectRequest(BaseModel):
+    project_id: str
+    name: str
+    scam_type: str = ""
+    status: str = "draft"
+    data: Dict[str, Any] = Field(default_factory=dict)
+
+
+@router.post("/projects")
+async def save_project_route(
+    body: SaveProjectRequest,
+    uid: str = Depends(get_current_user),
+):
+    """Save or update a project for the authenticated user."""
+    record = ProjectRecord(
+        project_id=body.project_id,
+        owner_uid=uid,
+        name=body.name,
+        scam_type=body.scam_type,
+        status=body.status,
+        data=body.data,
+    )
+    doc_id = save_project(record)
+    return {"project_id": doc_id, "message": "Project saved."}
+
+
+@router.get("/projects")
+async def list_projects_route(uid: str = Depends(get_current_user)):
+    """List all projects for the authenticated user (without full data blobs)."""
+    items = list_projects(uid)
+    return {"projects": items}
+
+
+@router.get("/projects/{project_id}")
+async def get_project_route(
+    project_id: str,
+    uid: str = Depends(get_current_user),
+):
+    """Get a single project with full data."""
+    proj = get_project(uid, project_id)
+    if not proj:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return proj
+
+
+@router.delete("/projects/{project_id}")
+async def delete_project_route(
+    project_id: str,
+    uid: str = Depends(get_current_user),
+):
+    """Delete a project."""
+    deleted = delete_project(uid, project_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Project deleted."}
+
+
 # ==================== DEBUG ENDPOINTS ====================
 
 @router.get("/debug/sessions")

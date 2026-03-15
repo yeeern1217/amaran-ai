@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useApp } from "@/lib/app-context"
-import { fetchTrendingNews, type SerperNewsItem } from "@/lib/api"
+import { useAuth } from "@/lib/auth-context"
+import { fetchTrendingNews, listProjects, deleteProject, type SerperNewsItem, type FirestoreProject } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -33,6 +34,9 @@ import {
   Sparkles,
   Loader2,
   RefreshCw,
+  LogIn,
+  LogOut,
+  Trash2,
 } from "lucide-react"
 import logoImg from "@/assets/logo.png"
 
@@ -40,16 +44,6 @@ import logoImg from "@/assets/logo.png"
 
 // Re-use the SerperNewsItem from the API client as our NewsItem type
 type NewsItem = SerperNewsItem
-
-interface Project {
-  id: string
-  name: string
-  date: string
-  status: "draft" | "in-progress" | "completed"
-  scamType: string
-}
-
-const PLACEHOLDER_PROJECTS: Project[] = []
 
 // ─── Category colors ─────────────────────────────────────────────
 
@@ -79,6 +73,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export function PageLanding() {
   const { setShowLanding, setNewsInput, setCurrentStep, setIsAnalyzed } = useApp()
+  const { user, loading: authLoading, idToken, signIn, signOut } = useAuth()
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -87,6 +82,10 @@ export function PageLanding() {
   const [newsItems, setNewsItems] = useState<NewsItem[]>([])
   const [newsLoading, setNewsLoading] = useState(true)
   const [newsError, setNewsError] = useState<string | null>(null)
+
+  // Projects state
+  const [projects, setProjects] = useState<FirestoreProject[]>([])
+  const [projectsLoading, setProjectsLoading] = useState(false)
 
   // Fetch trending news on mount
   useEffect(() => {
@@ -111,6 +110,25 @@ export function PageLanding() {
     loadNews()
     return () => { cancelled = true }
   }, [])
+
+  // Fetch past projects when authenticated
+  useEffect(() => {
+    if (!idToken) { setProjects([]); return }
+    let cancelled = false
+    async function loadProjects() {
+      setProjectsLoading(true)
+      try {
+        const res = await listProjects(idToken!)
+        if (!cancelled) setProjects(res.projects)
+      } catch {
+        // silently ignore — user just sees empty list
+      } finally {
+        if (!cancelled) setProjectsLoading(false)
+      }
+    }
+    loadProjects()
+    return () => { cancelled = true }
+  }, [idToken])
 
   async function handleRefreshNews() {
     setNewsLoading(true)
@@ -153,10 +171,20 @@ export function PageLanding() {
     setShowLanding(false)
   }
 
-  function handleResumeProject(_project: Project) {
-    // Placeholder: just enter the pipeline
+  function handleResumeProject(_project: FirestoreProject) {
+    // TODO: restore pipeline state from project.data blob
     setCurrentStep(0)
     setShowLanding(false)
+  }
+
+  async function handleDeleteProject(projectId: string) {
+    if (!idToken) return
+    try {
+      await deleteProject(idToken, projectId)
+      setProjects((prev) => prev.filter((p) => p.project_id !== projectId))
+    } catch {
+      // ignore
+    }
   }
 
   const filteredNews = searchQuery.trim()
@@ -190,7 +218,24 @@ export function PageLanding() {
             </div>
           </div>
           {/* intentionally empty — Quick Start box below handles new project */}
-          <div />
+          <div className="flex items-center gap-3">
+            {authLoading ? null : user ? (
+              <>
+                <span className="text-xs text-muted-foreground hidden sm:block truncate max-w-[160px]">
+                  {user.displayName || user.email}
+                </span>
+                <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-xs">
+                  <LogOut className="size-3.5" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button variant="outline" size="sm" onClick={signIn} className="gap-1.5 text-xs">
+                <LogIn className="size-3.5" />
+                Sign In
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -344,16 +389,28 @@ export function PageLanding() {
               <CardContent className="p-0">
                 <ScrollArea className="max-h-[calc(100vh-340px)]">
                   <div className="flex flex-col divide-y divide-border/40">
-                    {PLACEHOLDER_PROJECTS.length === 0 && (
+                    {!user && (
+                      <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                        <LogIn className="size-8 text-muted-foreground/40" />
+                        <p className="text-sm text-muted-foreground">Sign in to view past projects</p>
+                      </div>
+                    )}
+                    {user && projectsLoading && (
+                      <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                        <Loader2 className="size-6 animate-spin text-teal-400" />
+                        <p className="text-sm text-muted-foreground">Loading projects...</p>
+                      </div>
+                    )}
+                    {user && !projectsLoading && projects.length === 0 && (
                       <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
                         <FolderOpen className="size-8 text-muted-foreground/40" />
                         <p className="text-sm text-muted-foreground">No past projects yet</p>
                         <p className="text-xs text-muted-foreground/60">Your completed campaigns will appear here</p>
                       </div>
                     )}
-                    {PLACEHOLDER_PROJECTS.map((project) => (
+                    {projects.map((project) => (
                       <div
-                        key={project.id}
+                        key={project.project_id}
                         className="flex items-center gap-3 p-4 hover:bg-secondary/30 transition-colors group"
                       >
                         {/* Icon */}
@@ -385,14 +442,14 @@ export function PageLanding() {
                               variant="outline"
                               className={cn(
                                 "text-[10px] px-1.5 py-0",
-                                CATEGORY_COLORS[project.scamType] || "text-muted-foreground"
+                                CATEGORY_COLORS[project.scam_type] || "text-muted-foreground"
                               )}
                             >
-                              {project.scamType}
+                              {project.scam_type || "—"}
                             </Badge>
                             <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                               <Clock className="size-3" />
-                              {project.date}
+                              {new Date(project.updated_at).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
@@ -405,15 +462,25 @@ export function PageLanding() {
                           >
                             {STATUS_LABELS[project.status]}
                           </Badge>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 text-xs px-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => handleResumeProject(project)}
-                          >
-                            {project.status === "completed" ? "View" : "Resume"}
-                            <ArrowRight className="size-3 ml-1" />
-                          </Button>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 text-xs px-2"
+                              onClick={() => handleResumeProject(project)}
+                            >
+                              {project.status === "completed" ? "View" : "Resume"}
+                              <ArrowRight className="size-3 ml-1" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 text-xs px-1.5 text-red-400 hover:text-red-300"
+                              onClick={() => handleDeleteProject(project.project_id)}
+                            >
+                              <Trash2 className="size-3" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}

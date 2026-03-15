@@ -73,4 +73,8 @@ export {
   generateSocialStrategy,
   chatSocialStrategy,
   getSocialStrategy,
+  listProjects,
+  saveProject,
+  getProject,
+  deleteProject,
 } from "./client";

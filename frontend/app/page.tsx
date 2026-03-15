@@ -1,6 +1,7 @@
 "use client"
 
 import { AppProvider, useApp } from "@/lib/app-context"
+import { AuthProvider } from "@/lib/auth-context"
 import { StepperNav } from "@/components/stepper-nav"
 import { PageLanding } from "@/components/page-landing"
 import { PageBriefing } from "@/components/page-briefing"
@@ -48,8 +49,10 @@ function AppContent() {
 
 export default function Home() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </AuthProvider>
   )
 }

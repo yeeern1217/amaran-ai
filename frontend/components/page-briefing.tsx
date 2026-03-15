@@ -2,11 +2,13 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useApp } from "@/lib/app-context"
+import { useAuth } from "@/lib/auth-context"
 import {
   submitIntake,
   submitIntakeStream,
   verifyFactSheet,
   chatFactSheet,
+  saveProject,
   type FrontendFactCheck,
 } from "@/lib/api"
 import { ChatPanel } from "@/components/ui/chat-panel"
@@ -65,6 +67,8 @@ export function PageBriefing() {
     setSessionId,
     setRecommendedAvatars,
   } = useApp()
+
+  const { idToken } = useAuth()
 
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
@@ -150,11 +154,27 @@ export function PageBriefing() {
         )
         setSessionId(result.session_id)
         setFactCheck(result.fact_check)
+        if (idToken) {
+          saveProject(idToken, {
+            project_id: result.session_id,
+            name: result.fact_check.scam_name || newsInput.trim().slice(0, 60),
+            scam_type: result.fact_check.category,
+            status: "in_progress",
+          }).catch(() => {})
+        }
       } else {
         // Standard (non-streaming) intake
         const result = await submitIntake(newsInput.trim(), sourceType, undefined, false)
         setSessionId(result.session_id)
         setFactCheck(result.fact_check)
+        if (idToken) {
+          saveProject(idToken, {
+            project_id: result.session_id,
+            name: result.fact_check.scam_name || newsInput.trim().slice(0, 60),
+            scam_type: result.fact_check.category,
+            status: "in_progress",
+          }).catch(() => {})
+        }
       }
       setIsAnalyzed(true)
       setIsVerified(false)
