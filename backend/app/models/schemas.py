@@ -517,6 +517,8 @@ class VisualAudioPipelineState(BaseModel):
     veo_clips: List[VeoClipEntry] = Field(default_factory=list)
     output_dir: Optional[str] = None
     video_format: str = Field(default="reel", description="Video format used for aspect ratio")
+    current_language: Optional[str] = Field(default=None, description="Language code of the most recent Veo generation")
+    original_veo_script: Optional[VeoScript] = Field(default=None, description="Original (untranslated) VeoScript for dialogue-only translation")
 
 
 # ==================== SOCIAL OFFICER OUTPUT ====================

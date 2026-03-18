@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY. A Malaysian male in his late 30s with a neat, short haircut. He is wearing a crisp, formal Royal Malaysia Police (PDRM) uniform including a blue shirt with official badges, dark trousers, and polished black shoes. He has a stern yet authoritative presence.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_phishing_58f0ed34_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Online Shopper (Victim)",
+    "description": "FULL BODY. A Malaysian male in his mid-20s representing a young professional. He has short black hair and is wearing a white button-down office shirt tucked into charcoal grey trousers with a black leather belt and brown dress shoes.",
+    "filename": "Online_Shopper_Victim_2x2_grid.png",
+    "path": "output\\scam_phishing_58f0ed34_en\\character_refs\\Online_Shopper_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake Bank Officer (Scammer)",
+    "description": "FULL BODY. An anonymous, featureless humanoid silhouette composed of digital static and glowing blue binary code. The figure has no facial features and wears a dark hooded cloak that obscures any human identity, representing a digital threat.",
+    "filename": "Fake_Bank_Officer_Scammer_2x2_grid.png",
+    "path": "output\\scam_phishing_58f0ed34_en\\character_refs\\Fake_Bank_Officer_Scammer_2x2_grid.png"
+  }
+]

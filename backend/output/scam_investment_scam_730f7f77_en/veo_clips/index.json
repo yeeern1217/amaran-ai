@@ -1,0 +1,16 @@
+[
+  {
+    "segment_index": 1,
+    "filename": "segment_1.mp4",
+    "path": "output\\scam_investment_scam_730f7f77_en\\veo_clips\\segment_1.mp4",
+    "estimated_cost_usd": 1.2,
+    "video_base64": null
+  },
+  {
+    "segment_index": 2,
+    "filename": "segment_2.mp4",
+    "path": "output\\scam_investment_scam_730f7f77_en\\veo_clips\\segment_2.mp4",
+    "estimated_cost_usd": 1.2,
+    "video_base64": null
+  }
+]

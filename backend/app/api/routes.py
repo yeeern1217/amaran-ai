@@ -812,6 +812,9 @@ async def generate_video_package(request: GenerateRequest):
                 output_dir=None,
                 stop_after="char_refs",
             )
+            # Track the initial language so /video-assets can detect language switches
+            if pipeline.state.visual_audio:
+                pipeline.state.visual_audio.current_language = first_lang_code
             
             # Build character descriptions with base64-encoded images
             character_descriptions_data = []
@@ -900,34 +903,63 @@ async def generate_video_assets(request: VideoAssetsRequest, background_tasks: B
         )
     
     video_inputs = pipeline.state.video_package.video_inputs
-    effective_language_code = request.language_code
-    if request.language_code not in video_inputs:
-        available = list(video_inputs.keys())
-        if "en" in video_inputs:
+    requested_language = request.language_code
+    available = list(video_inputs.keys())
+
+    effective_language_code = requested_language
+    target_language: str | None = None
+
+    if requested_language in video_inputs:
+        video_input = video_inputs[requested_language]
+    else:
+        # If a VeoScript already exists, support on-demand language switching by
+        # translating dialogue only, while reusing existing character/scene assets.
+        if pipeline.state.visual_audio and pipeline.state.visual_audio.veo_script:
+            base_language = pipeline.state.visual_audio.current_language or "en"
+            if base_language not in video_inputs:
+                base_language = "en" if "en" in video_inputs else available[0]
+            video_input = video_inputs[base_language]
+            effective_language_code = base_language
+            target_language = requested_language
+            logger.info(
+                "[VIDEO-ASSETS] Requested language '%s' not in package. Using base '%s' with dialogue-only translation. Available=%s",
+                requested_language,
+                base_language,
+                available,
+            )
+        elif "en" in video_inputs:
             logger.warning(
-                "[VIDEO-ASSETS] Requested language '%s' not in package. Falling back to 'en'. Available=%s",
-                request.language_code,
+                "[VIDEO-ASSETS] Requested language '%s' not in package and no existing VeoScript. Falling back to 'en'. Available=%s",
+                requested_language,
                 available,
             )
             effective_language_code = "en"
+            video_input = video_inputs[effective_language_code]
         else:
             raise HTTPException(
                 status_code=400,
-                detail=f"Language '{request.language_code}' not in package. Available: {available}"
+                detail=f"Language '{requested_language}' not in package. Available: {available}"
             )
-
-    video_input = video_inputs[effective_language_code]
+    
+    # Detect language switch for languages that already exist in the package.
+    # (For missing languages, target_language is already set above.)
+    if target_language is None and pipeline.state.visual_audio and pipeline.state.visual_audio.veo_script:
+        prev_lang = pipeline.state.visual_audio.current_language
+        if prev_lang and prev_lang != requested_language:
+            target_language = requested_language
     
     try:
         t0 = time.time()
         logger.info("[VIDEO-ASSETS] === Starting visual/audio asset generation ===")
-        logger.info("[VIDEO-ASSETS] Session=%s | Language=%s | StopAfter=%s",
-                    request.session_id, request.language_code, request.stop_after or "all")
+        logger.info("[VIDEO-ASSETS] Session=%s | Language=%s | StopAfter=%s | TranslateDialogue=%s",
+                    request.session_id, request.language_code, request.stop_after or "all",
+                    target_language or "no")
 
         va_state = await pipeline.generate_video_assets_stepwise(
             video_input=video_input,
             output_dir=request.output_dir,
             stop_after=request.stop_after,
+            target_language=target_language,
         )
         
         # Encode Veo clips as base64 so the browser can play them
@@ -947,11 +979,11 @@ async def generate_video_assets(request: VideoAssetsRequest, background_tasks: B
         return VideoAssetsResponse(
             session_id=request.session_id,
             status="completed" if not request.stop_after else f"completed_through_{stopped}",
-            language_code=effective_language_code,
+            language_code=(target_language or effective_language_code),
             visual_audio_state=va_state.model_dump(mode="json"),
             message=(
                 f"Visual/Audio assets generated through stage: {stopped}"
-                if effective_language_code == request.language_code
+                if target_language or effective_language_code == request.language_code
                 else f"Requested language '{request.language_code}' unavailable; generated using '{effective_language_code}' package through stage: {stopped}"
             ),
         )
@@ -1462,6 +1494,69 @@ async def get_video_assets_status(session_id: str):
     }
 
 
+@router.get("/captions/{session_id}")
+async def get_captions(session_id: str):
+    """
+    Return caption/dialogue texts per segment per language from the video package.
+    
+    Response format:
+    {
+      "session_id": "...",
+      "captions": {
+        "en": [{"segment_id": 1, "text": "Hello?"},...],
+        "bm": [{"segment_id": 1, "text": "Hello?"},...]
+      }
+    }
+    """
+    pipeline = _sessions.get(session_id)
+    if not pipeline:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    vp = pipeline.state.video_package
+    if not vp or not vp.video_inputs:
+        raise HTTPException(status_code=400, detail="No video package available.")
+    
+    def _extract_quoted_dialogue_lines(text: str) -> List[str]:
+        import re
+        lines: List[str] = []
+        for m in re.finditer(r'"([^"]+)"|\'([^\']+)\'', text or ""):
+            value = (m.group(1) or m.group(2) or "").strip()
+            if value:
+                lines.append(value)
+        return lines
+
+    def _normalize_caption_text(text: str) -> str:
+        quoted = _extract_quoted_dialogue_lines(text or "")
+        if quoted:
+            return "\n".join(quoted)
+        return (text or "").strip()
+
+    captions: Dict[str, List[Dict[str, Any]]] = {}
+    for lang_code, vi in vp.video_inputs.items():
+        lang_captions = []
+        for scene in vi.scenes:
+            lang_captions.append({
+                "segment_id": scene.scene_id,
+                "text": _normalize_caption_text(scene.audio_script or ""),
+            })
+        captions[lang_code] = lang_captions
+
+    # Also expose captions for the currently generated on-demand language
+    # (when it may not exist in video_package.video_inputs).
+    va_state = pipeline.state.visual_audio
+    if va_state and va_state.veo_script and va_state.current_language:
+        if va_state.current_language not in captions:
+            captions[va_state.current_language] = [
+                {
+                    "segment_id": seg.segment_index,
+                    "text": "\n".join(_extract_quoted_dialogue_lines(seg.veo_prompt)),
+                }
+                for seg in va_state.veo_script.segments
+            ]
+    
+    return {"session_id": session_id, "captions": captions}
+
+
 # ==================== VIDEO EXPORT ====================
 
 class ExportVideoRequest(BaseModel):
@@ -1498,6 +1593,22 @@ async def export_stitched_video(request: ExportVideoRequest):
     if not clip_paths:
         raise HTTPException(status_code=400, detail="No clip files found on disk.")
 
+    def _extract_quoted_dialogue_lines(text: str) -> List[str]:
+        """Extract dialogue enclosed in single/double quotes from a prompt."""
+        import re
+        lines: List[str] = []
+        for m in re.finditer(r'"([^"]+)"|\'([^\']+)\'', text or ""):
+            value = (m.group(1) or m.group(2) or "").strip()
+            if value:
+                lines.append(value)
+        return lines
+
+    def _normalize_caption_text(text: str) -> str:
+        quoted = _extract_quoted_dialogue_lines(text or "")
+        if quoted:
+            return "\n".join(quoted)
+        return (text or "").strip()
+
     # Build caption texts per segment if requested
     caption_texts: List[str] = []
     if request.caption_languages:
@@ -1511,8 +1622,19 @@ async def export_stitched_video(request: ExportVideoRequest):
                     if vi:
                         for scene in vi.scenes:
                             if scene.scene_id == seg_idx:
-                                parts.append(scene.audio_script)
+                                parts.append(_normalize_caption_text(scene.audio_script))
                                 break
+                    elif (
+                        va_state.veo_script
+                        and va_state.current_language
+                        and lang_code == va_state.current_language
+                    ):
+                        seg = next(
+                            (s for s in va_state.veo_script.segments if s.segment_index == seg_idx),
+                            None,
+                        )
+                        if seg:
+                            parts.extend(_extract_quoted_dialogue_lines(seg.veo_prompt))
                 caption_texts.append("\n".join(parts) if parts else "")
         else:
             caption_texts = [""] * len(clip_paths)
@@ -1586,7 +1708,86 @@ async def export_stitched_video(request: ExportVideoRequest):
             "copy",
             stitched_path,
         ]
-        subprocess.run(concat_cmd, check=True, capture_output=True, text=True)
+
+        concat_stderr = ""
+        try:
+            subprocess.run(concat_cmd, check=True, capture_output=True, text=True)
+        except subprocess.CalledProcessError as concat_err:
+            concat_stderr = concat_err.stderr or ""
+            logger.warning("[EXPORT] Fast concat failed, retrying with re-encode: %s", concat_err)
+            concat_reencode_cmd = [
+                ffmpeg_bin,
+                "-y",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                concat_path,
+                "-c:v",
+                "libx264",
+                "-pix_fmt",
+                "yuv420p",
+                "-c:a",
+                "aac",
+                "-movflags",
+                "+faststart",
+                stitched_path,
+            ]
+            try:
+                subprocess.run(concat_reencode_cmd, check=True, capture_output=True, text=True)
+            except subprocess.CalledProcessError as reenc_err:
+                # Final fallback: concat filter with explicit inputs (avoids concat demuxer/path issues on Windows).
+                reenc_stderr = reenc_err.stderr or ""
+                logger.warning("[EXPORT] Re-encode concat failed, retrying with concat-filter fallback: %s", reenc_err)
+
+                has_audio_flags: List[bool] = []
+                for cp in clip_paths:
+                    probe = subprocess.run(
+                        [ffmpeg_bin, "-i", cp, "-f", "null", "-"],
+                        capture_output=True,
+                        text=True,
+                    )
+                    stderr_txt = (probe.stderr or "")
+                    has_audio_flags.append("Audio:" in stderr_txt)
+
+                all_have_audio = all(has_audio_flags) if has_audio_flags else False
+                filter_inputs: List[str] = []
+                for i in range(len(clip_paths)):
+                    filter_inputs.append(f"[{i}:v:0]")
+                    if all_have_audio:
+                        filter_inputs.append(f"[{i}:a:0]")
+
+                if all_have_audio:
+                    filter_complex = f"{''.join(filter_inputs)}concat=n={len(clip_paths)}:v=1:a=1[v][a]"
+                else:
+                    filter_complex = f"{''.join(filter_inputs)}concat=n={len(clip_paths)}:v=1:a=0[v]"
+
+                concat_filter_cmd: List[str] = [ffmpeg_bin, "-y"]
+                for cp in clip_paths:
+                    concat_filter_cmd.extend(["-i", cp])
+                concat_filter_cmd.extend([
+                    "-filter_complex", filter_complex,
+                    "-map", "[v]",
+                    "-c:v", "libx264",
+                    "-pix_fmt", "yuv420p",
+                    "-movflags", "+faststart",
+                ])
+                if all_have_audio:
+                    concat_filter_cmd.extend(["-map", "[a]", "-c:a", "aac"])
+                concat_filter_cmd.append(stitched_path)
+
+                try:
+                    subprocess.run(concat_filter_cmd, check=True, capture_output=True, text=True)
+                except subprocess.CalledProcessError as final_err:
+                    final_stderr = final_err.stderr or ""
+                    logger.error(
+                        "[EXPORT] Concat failed across all strategies. fast_stderr=%s | reencode_stderr=%s | final_stderr=%s",
+                        concat_stderr[:2000],
+                        reenc_stderr[:2000],
+                        final_stderr[:2000],
+                    )
+                    raise
 
         output_path = stitched_path
 

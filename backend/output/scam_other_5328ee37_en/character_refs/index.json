@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY. A Malaysian man in his early 40s, athletic build, wearing a crisp dark blue Royal Malaysia Police (PDRM) uniform with silver buttons, official rank insignia on the shoulders, and a black belt. He has short, neat black hair and a professional, authoritative demeanor. He wears black polished leather shoes.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_other_5328ee37_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Elderly Victim",
+    "description": "FULL BODY. An elderly Malaysian woman in her late 60s, retired school teacher persona. She is wearing a modest floral pattern baju kurung with a soft grey tudung (headscarf). She has a gentle, weathered face and wears simple sandals. She is standing with a slight slouch, appearing vulnerable.",
+    "filename": "Elderly_Victim_2x2_grid.png",
+    "path": "output\\scam_other_5328ee37_en\\character_refs\\Elderly_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake Recovery Agent",
+    "description": "FULL BODY. An anonymous, featureless human figure with a smooth, matte-black surface. The figure is dressed in a sharp, business casual outfit consisting of a dark grey blazer and trousers. Glowing blue circuitry patterns run faintly across its torso, suggesting an AI or digital origin.",
+    "filename": "Fake_Recovery_Agent_2x2_grid.png",
+    "path": "output\\scam_other_5328ee37_en\\character_refs\\Fake_Recovery_Agent_2x2_grid.png"
+  },
+  {
+    "role": "Fraudulent Legal Expert",
+    "description": "FULL BODY. A featureless, translucent white humanoid figure resembling a digital mannequin. It is wearing a formal dark navy blue suit with a white shirt and a tie. The head is completely smooth with no facial features, and it emits a subtle digital glitch effect around its edges.",
+    "filename": "Fraudulent_Legal_Expert_2x2_grid.png",
+    "path": "output\\scam_other_5328ee37_en\\character_refs\\Fraudulent_Legal_Expert_2x2_grid.png"
+  }
+]

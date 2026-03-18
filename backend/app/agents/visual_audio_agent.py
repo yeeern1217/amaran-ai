@@ -333,6 +333,67 @@ class VisualAudioAgent(BaseAgent):
         return script
 
     # ------------------------------------------------------------------
+    # Dialogue-only translation of an existing VeoScript
+    # ------------------------------------------------------------------
+    async def translate_veo_script_dialogue(
+        self,
+        script: VeoScript,
+        target_language: str,
+    ) -> VeoScript:
+        """Translate ONLY the spoken dialogue inside quotation marks in each
+        segment's veo_prompt, keeping scene descriptions, camera directions,
+        and character names unchanged.  Returns a new VeoScript."""
+
+        lang_map = {
+            "bm": "Malaysian Malay (Bahasa Melayu Malaysia)",
+            "zh": "Simplified Chinese (Malaysia context)",
+            "zh_yue": "Cantonese (Malaysia context)",
+            "ta": "Tamil suitable for Malaysian Tamil speakers",
+            "en": "English",
+        }
+        lang_label = lang_map.get(target_language, target_language)
+
+        system = (
+            "You are a strict dialogue-only translator for Scam Shield Malaysia awareness videos.\n\n"
+            "You will receive a full video script in JSON format with:\n"
+            "- title (string)\n- total_duration_sec (int)\n"
+            "- segments (list of objects with segment_index, characters_involved, veo_prompt)\n\n"
+            "Your task:\nTranslate ONLY the spoken dialogue inside quotation marks "
+            '(" ") or (\' \') inside each veo_prompt.\n\n'
+            "STRICT RULES:\n"
+            "- Do NOT translate title.\n"
+            "- Do NOT translate characters_involved.\n"
+            "- Do NOT translate narration, scene descriptions, camera directions, or visual style text.\n"
+            "- Do NOT modify segment_index.\n"
+            "- Do NOT modify total_duration_sec.\n"
+            "- Only replace text inside quotation marks.\n"
+            "- Keep the exact same JSON schema and structure.\n"
+            "- Do NOT add explanations.\n"
+            "- Output valid JSON only.\n\n"
+            f"Target language: {lang_label}\n\n"
+            "If a segment has no dialogue, leave it unchanged."
+        )
+
+        script_json = script.model_dump_json()
+        user = (
+            f"Target language: {lang_label}\n\n"
+            "Translate ONLY the dialogue inside quotation marks in the following JSON script.\n"
+            "Return valid JSON with the exact same schema and structure.\n"
+            "Do NOT translate any other text.\n\n"
+            f"Script:\n\n{script_json}"
+        )
+
+        raw = await self._call_flash_json(
+            system, user, VeoScript.model_json_schema(), thinking="low"
+        )
+        translated = VeoScript.model_validate_json(raw)
+        logger.info(
+            "Dialogue-only translation done → %s (%d segments)",
+            target_language, len(translated.segments),
+        )
+        return translated
+
+    # ------------------------------------------------------------------
     # Stage 3: Character descriptions
     # ------------------------------------------------------------------
     async def generate_character_descriptions(

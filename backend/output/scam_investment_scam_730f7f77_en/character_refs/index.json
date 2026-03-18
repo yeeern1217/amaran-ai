@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY: A Malaysian man in his late 30s with short, neat black hair, wearing a crisp dark navy blue Malaysian police uniform with silver buttons and insignia on the shoulders. He stands tall and authoritative, wearing black tactical boots and formal trousers.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_investment_scam_730f7f77_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Retiree Investor (Victim)",
+    "description": "FULL BODY: An elderly Malaysian man in his early 60s with salt-and-pepper hair. He wears a casual short-sleeved checkered shirt tucked into beige chino trousers and brown leather loafers. He has a concerned expression while holding a smartphone.",
+    "filename": "Retiree_Investor_Victim_2x2_grid.png",
+    "path": "output\\scam_investment_scam_730f7f77_en\\character_refs\\Retiree_Investor_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake Investment Guru (Scammer)",
+    "description": "FULL BODY: A featureless human-shaped silhouette appearing as a digital shadow. The figure is draped in a translucent glitching digital pattern with glowing green binary code flowing across the surface. It wears a stylized, high-collared digital cloak.",
+    "filename": "Fake_Investment_Guru_Scammer_2x2_grid.png",
+    "path": "output\\scam_investment_scam_730f7f77_en\\character_refs\\Fake_Investment_Guru_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Deepfake Public Figure (Scammer)",
+    "description": "FULL BODY: An anonymous, featureless android-like figure with a smooth metallic silver finish. The head is a blank slate without eyes or mouth, and the body has glowing blue data-circuit lines running down the limbs, representing an AI-generated persona.",
+    "filename": "Deepfake_Public_Figure_Scammer_2x2_grid.png",
+    "path": "output\\scam_investment_scam_730f7f77_en\\character_refs\\Deepfake_Public_Figure_Scammer_2x2_grid.png"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY: A Malaysian male in his late 30s, tall and authoritative, wearing a dark navy blue Royal Malaysia Police (PDRM) ceremonial uniform with silver buttons, black trousers, and polished black shoes. He has short, neat black hair and a clean-shaven face.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_impersonation_4b4faa07_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Puan Aminah (Elderly Victim)",
+    "description": "FULL BODY: An elderly Malaysian woman in her late 60s, wearing a modest traditional Baju Kurung in a soft floral pattern with a matching light grey hijab. She has a gentle face with visible aging, wearing simple sandals.",
+    "filename": "Puan_Aminah_Elderly_Victim_2x2_grid.png",
+    "path": "output\\scam_impersonation_4b4faa07_en\\character_refs\\Puan_Aminah_Elderly_Victim_2x2_grid.png"
+  },
+  {
+    "role": "AI Voice Scammer (Antagonist)",
+    "description": "FULL BODY: A featureless, anonymous humanoid figure composed of shimmering translucent blue digital data streams and glowing white circuitry patterns. The figure has no facial features and is surrounded by floating red digital audio waveforms and glitching pixels.",
+    "filename": "AI_Voice_Scammer_Antagonist_2x2_grid.png",
+    "path": "output\\scam_impersonation_4b4faa07_en\\character_refs\\AI_Voice_Scammer_Antagonist_2x2_grid.png"
+  }
+]

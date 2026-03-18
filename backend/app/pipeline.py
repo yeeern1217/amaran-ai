@@ -615,6 +615,7 @@ class PipelineOrchestrator:
         video_input: VisualAudioAgentInput,
         output_dir: Optional[str] = None,
         stop_after: Optional[str] = None,
+        target_language: Optional[str] = None,
     ) -> VisualAudioPipelineState:
         """
         Run Visual/Audio Agent stages individually for stepwise control.
@@ -624,6 +625,10 @@ class PipelineOrchestrator:
             output_dir: Directory for generated assets
             stop_after: Stop after this stage: 'story', 'script', 'characters',
                        'char_refs', 'clip_refs', or None for all stages
+            target_language: If set and an existing VeoScript exists, translate
+                only the dialogue inside veo_prompts instead of regenerating the
+                script from scratch.  Character descriptions, character refs, and
+                clip refs are always reused.
                        
         Returns:
             VisualAudioPipelineState at the requested stop point
@@ -654,6 +659,8 @@ class PipelineOrchestrator:
                 agent._state.obfuscated_story = existing_va_state.obfuscated_story
             if existing_va_state.veo_script:
                 agent._state.veo_script = existing_va_state.veo_script
+            if existing_va_state.original_veo_script:
+                agent._state.original_veo_script = existing_va_state.original_veo_script
             if existing_va_state.character_descriptions:
                 agent._state.character_descriptions = existing_va_state.character_descriptions
             if existing_va_state.character_ref_images:
@@ -691,13 +698,30 @@ class PipelineOrchestrator:
             return self._save_va_state(agent)
         
         # Stage 2: Script
-        if has_script:
+        if target_language and has_script:
+            # Dialogue-only translation: always translate from the original
+            # (untranslated) VeoScript so successive switches stay accurate.
+            source_script = agent._state.original_veo_script or agent._state.veo_script
+            t0 = _time.time()
+            logger.info("[VA-PIPELINE] Stage 2/%d — Translating VeoScript dialogue to '%s'...",
+                        total_stages, target_language)
+            script = await agent.translate_veo_script_dialogue(
+                source_script, target_language
+            )
+            agent._state.veo_script = script
+            # Force Veo clip regeneration since the prompts changed
+            agent._state.veo_clips = []
+            logger.info("[VA-PIPELINE] Stage 2/%d — Dialogue translation done (%.1fs)",
+                        total_stages, _time.time() - t0)
+        elif has_script:
             logger.info("[VA-PIPELINE] Stage 2/%d — Reusing existing VeoScript", total_stages)
             script = agent._state.veo_script
         else:
             t0 = _time.time()
             logger.info("[VA-PIPELINE] Stage 2/%d — Generating VeoScript...", total_stages)
             script = await agent.generate_veo_script(story, scenes_dicts)
+            # Save original script for future dialogue-only translations
+            agent._state.original_veo_script = script.model_copy(deep=True)
             logger.info("[VA-PIPELINE] Stage 2/%d — VeoScript done (%.1fs) — %d segments, %ds total",
                         total_stages, _time.time() - t0, len(script.segments), script.total_duration_sec)
         if stop_after == "script":
@@ -799,6 +823,12 @@ class PipelineOrchestrator:
         )
         logger.info("[VA-PIPELINE] Stage 6/%d — Veo clips done (%.1fs) — %d clips generated",
                     total_stages, _time.time() - t0, len(agent.state.veo_clips))
+        
+        # Track which language was used for this Veo generation
+        if target_language:
+            agent._state.current_language = target_language
+        elif video_input.meta_data and video_input.meta_data.language:
+            agent._state.current_language = self._get_language_code(video_input.meta_data.language)
         
         if self._state:
             self._state.visual_audio = agent.state

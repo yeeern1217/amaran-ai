@@ -732,6 +732,27 @@ export async function getVideoAssetsStatus(
   return fetchApi<VideoAssetsStatusResponse>(`/video-assets/${sessionId}`);
 }
 
+// ==================== Captions ====================
+
+export interface CaptionEntry {
+  segment_id: number;
+  text: string;
+}
+
+export interface CaptionsResponse {
+  session_id: string;
+  captions: Record<string, CaptionEntry[]>;
+}
+
+/**
+ * Fetch caption/dialogue texts per segment per language from the video package.
+ */
+export async function getCaptions(
+  sessionId: string
+): Promise<CaptionsResponse> {
+  return fetchApi<CaptionsResponse>(`/captions/${sessionId}`);
+}
+
 /**
  * Export a stitched MP4 video from all clips, optionally with burnt-in captions.
  * Returns a Blob of the video file.

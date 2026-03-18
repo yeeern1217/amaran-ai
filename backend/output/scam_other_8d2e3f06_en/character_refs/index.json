@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY. A Malaysian male in his late 30s, dressed in a formal Royal Malaysia Police (PDRM) dark blue uniform with professional insignia and a peaked cap. He has a clean-shaven, authoritative face and stands in a disciplined posture wearing polished black leather boots.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_other_8d2e3f06_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Puan Salmah (Elderly Victim)",
+    "description": "FULL BODY. An elderly Malaysian woman in her 60s, wearing a traditional Baju Kurung in soft lavender with a matching floral headscarf (tudung). She has a gentle, aged face and wears simple black sandals.",
+    "filename": "Puan_Salmah_Elderly_Victim_2x2_grid.png",
+    "path": "output\\scam_other_8d2e3f06_en\\character_refs\\Puan_Salmah_Elderly_Victim_2x2_grid.png"
+  },
+  {
+    "role": "'Recovery Agent' (Scammer)",
+    "description": "FULL BODY. An anonymous, featureless human silhouette made of glowing blue digital matrix code. The figure has a sleek, featureless head and wears a faint, translucent outline of a business suit to appear professional yet artificial.",
+    "filename": "Recovery_Agent_Scammer_2x2_grid.png",
+    "path": "output\\scam_other_8d2e3f06_en\\character_refs\\Recovery_Agent_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "'Fraudulent Lawyer' (Scammer)",
+    "description": "FULL BODY. An anonymous, featureless human silhouette in deep charcoal gray, with circuit-board patterns etched into its surface. The figure is shaped like a person in formal attire but has no facial features, representing a digital deception.",
+    "filename": "Fraudulent_Lawyer_Scammer_2x2_grid.png",
+    "path": "output\\scam_other_8d2e3f06_en\\character_refs\\Fraudulent_Lawyer_Scammer_2x2_grid.png"
+  }
+]

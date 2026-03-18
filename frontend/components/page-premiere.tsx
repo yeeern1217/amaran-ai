@@ -2,7 +2,8 @@
 
 import { useRef, useState, useEffect, useCallback } from "react"
 import { useApp } from "@/lib/app-context"
-import { exportStitchedVideo, generateVideoAssets } from "@/lib/api"
+import { exportStitchedVideo, generateVideoAssets, getCaptions } from "@/lib/api"
+import type { CaptionEntry } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -57,11 +58,13 @@ export function PagePremiere() {
   }
   const defaultLangCode = langMap[config.language] || "en"
   const [captionLangs, setCaptionLangs] = useState<string[]>([])
-  const [pendingCaptionLangs, setPendingCaptionLangs] = useState<string[]>([])
   const [clipLang, setClipLang] = useState<string>(defaultLangCode)
   const [pendingClipLang, setPendingClipLang] = useState<string>(defaultLangCode)
   const [isRegenerating, setIsRegenerating] = useState(false)
   const [regenError, setRegenError] = useState<string | null>(null)
+
+  // Caption data from backend (per language, per segment)
+  const [captionData, setCaptionData] = useState<Record<string, CaptionEntry[]>>({})
 
   // Export state
   const [isExporting, setIsExporting] = useState(false)
@@ -85,6 +88,14 @@ export function PagePremiere() {
     }
   }, [activeClip])
 
+  // Fetch caption data from backend
+  useEffect(() => {
+    if (!sessionId) return
+    getCaptions(sessionId)
+      .then((res) => setCaptionData(res.captions))
+      .catch(() => {})  // captions are optional
+  }, [sessionId])
+
   function getClipSrc(clipIndex: number): string | null {
     const clip = clips[clipIndex]
     if (!clip) return null
@@ -100,6 +111,52 @@ export function PagePremiere() {
     const segIdx = clip.segment_index ?? clip.segment_id
     const matched = scenes.find((s) => s.id === segIdx)
     return matched ?? scenes[clipIndex] ?? null
+  }
+
+  function extractQuotedDialogue(text: string): string[] {
+    const lines: string[] = []
+    const re = /"([^"]+)"|'([^']+)'/g
+    let m: RegExpExecArray | null
+    while ((m = re.exec(text)) !== null) {
+      const value = (m[1] || m[2] || "").trim()
+      if (value) lines.push(value)
+    }
+    return lines
+  }
+
+  function normalizeCaptionText(text: string): string[] {
+    const quoted = extractQuotedDialogue(text)
+    if (quoted.length > 0) return quoted
+    const trimmed = (text || "").trim()
+    return trimmed ? [trimmed] : []
+  }
+
+  /** Build caption lines for the active clip based on selected caption languages. */
+  function getCaptionTextForClip(clipIndex: number): string[] {
+    if (captionLangs.length === 0) return []
+    const clip = clips[clipIndex]
+    if (!clip) return []
+    const segId = clip.segment_index ?? clip.segment_id ?? clipIndex + 1
+    const lines: string[] = []
+    for (const lang of captionLangs) {
+      const entries = captionData[lang]
+      if (entries) {
+        const entry = entries.find((e) => e.segment_id === segId)
+        if (entry?.text) {
+          lines.push(...normalizeCaptionText(entry.text))
+          continue
+        }
+      }
+
+      // Fallback for on-demand translated clips that are not in video_package
+      if (visualAudioState?.veo_script && lang === clipLang) {
+        const seg = visualAudioState.veo_script.segments.find((s) => s.segment_index === segId)
+        if (seg?.veo_prompt) {
+          lines.push(...extractQuotedDialogue(seg.veo_prompt))
+        }
+      }
+    }
+    return lines
   }
 
   function handlePlayPause() {
@@ -120,36 +177,29 @@ export function PagePremiere() {
   }
 
   function toggleCaption(code: string) {
-    setPendingCaptionLangs((prev) =>
+    setCaptionLangs((prev) =>
       prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     )
   }
 
-  function arraysEqual(a: string[], b: string[]) {
-    if (a.length !== b.length) return false
-    const sa = [...a].sort()
-    const sb = [...b].sort()
-    return sa.every((v, i) => v === sb[i])
-  }
-
-  const hasPendingCaptionChanges = !arraysEqual(captionLangs, pendingCaptionLangs)
   const hasPendingLanguageChange = pendingClipLang !== clipLang
 
-  // Apply pending caption/language changes. Language changes require Veo regeneration.
+  // Apply pending language change. Requires Veo regeneration.
   async function handleRegenerateClipLanguage() {
-    if (!sessionId || (!hasPendingLanguageChange && !hasPendingCaptionChanges)) return
+    if (!sessionId || !hasPendingLanguageChange) return
     setIsRegenerating(true)
     setRegenError(null)
     try {
-      if (hasPendingLanguageChange) {
-        const result = await generateVideoAssets(sessionId, pendingClipLang)
-        if (result.visual_audio_state) {
-          setClipLang(pendingClipLang)
-          setVisualAudioState(result.visual_audio_state)
-          setActiveClip(0)
-        }
+      const result = await generateVideoAssets(sessionId, pendingClipLang)
+      if (result.visual_audio_state) {
+        setClipLang(result.language_code)
+        setPendingClipLang(result.language_code)
+        setVisualAudioState(result.visual_audio_state)
+        setActiveClip(0)
       }
-      setCaptionLangs([...pendingCaptionLangs])
+      if (result.language_code !== pendingClipLang) {
+        setRegenError(`Language '${pendingClipLang}' is not available in this package yet; showing '${result.language_code}'.`)
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to regenerate clips"
       if (msg.toLowerCase().includes("not in package")) {
@@ -291,6 +341,19 @@ export function PagePremiere() {
                         )}
                       </button>
                     )}
+                    {/* Caption overlay */}
+                    {getCaptionTextForClip(activeClip).length > 0 && (
+                      <div className="absolute bottom-4 left-4 right-4 pointer-events-none flex flex-col items-center gap-1">
+                        {getCaptionTextForClip(activeClip).map((line, i) => (
+                          <span
+                            key={i}
+                            className="inline-block bg-black/70 text-white text-sm px-3 py-1 rounded leading-snug text-center max-w-[90%]"
+                          >
+                            {line}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Playback controls */}
@@ -390,7 +453,7 @@ export function PagePremiere() {
                         className="flex items-center gap-2.5 cursor-pointer group"
                       >
                         <Checkbox
-                          checked={pendingCaptionLangs.includes(lang.code)}
+                          checked={captionLangs.includes(lang.code)}
                           onCheckedChange={() => toggleCaption(lang.code)}
                         />
                         <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
@@ -400,9 +463,9 @@ export function PagePremiere() {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {pendingCaptionLangs.length === 0
+                    {captionLangs.length === 0
                       ? "No captions selected"
-                      : `${pendingCaptionLangs.length} caption${pendingCaptionLangs.length > 1 ? "s" : ""} selected`}
+                      : `${captionLangs.length} caption${captionLangs.length > 1 ? "s" : ""} selected`}
                   </p>
                 </div>
 
@@ -432,7 +495,7 @@ export function PagePremiere() {
                   <Button
                     size="sm"
                     className="mt-1"
-                    disabled={isRegenerating || !sessionId || (!hasPendingLanguageChange && !hasPendingCaptionChanges)}
+                    disabled={isRegenerating || !sessionId || !hasPendingLanguageChange}
                     onClick={handleRegenerateClipLanguage}
                   >
                     {isRegenerating ? (
@@ -453,7 +516,7 @@ export function PagePremiere() {
                 </div>
               )}
 
-              {!isRegenerating && (hasPendingLanguageChange || hasPendingCaptionChanges) && (
+              {!isRegenerating && hasPendingLanguageChange && (
                 <p className="mt-3 text-xs text-amber-300">
                   Pending changes detected. Click Generate Video to apply them.
                 </p>
