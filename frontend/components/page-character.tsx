@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useApp } from "@/lib/app-context"
 import type { CharacterInfo } from "@/lib/app-context"
-import { chatCharacterRefinement } from "@/lib/api"
+import { chatCharacterRefinement, generateVideoAssets } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -31,9 +31,11 @@ interface BackendChatMessage {
 export function PageCharacter() {
   const {
     sessionId,
+    config,
     characterInfoList,
     setCharacterInfoList,
     recommendedCharacters,
+    setVisualAudioState,
     setCurrentStep,
   } = useApp()
 
@@ -42,12 +44,84 @@ export function PageCharacter() {
   const [chatInput, setChatInput] = useState("")
   const [isChatLoading, setIsChatLoading] = useState(false)
   const [isRevealing, setIsRevealing] = useState(true)
+  const [isGeneratingCharacters, setIsGeneratingCharacters] = useState(false)
 
-  // Brief loading state before showing characters
   useEffect(() => {
-    const timer = setTimeout(() => setIsRevealing(false), 5000)
-    return () => clearTimeout(timer)
-  }, [])
+    if (!sessionId) {
+      setIsRevealing(false)
+      return
+    }
+    const hasCompleteAssets =
+      characterInfoList.length > 0 &&
+      characterInfoList.every((c) => Boolean((c.description || "").trim()) && Boolean(c.imageBase64 || c.imageUrl))
+    if (hasCompleteAssets) {
+      setIsRevealing(false)
+    }
+  }, [sessionId, characterInfoList])
+
+  // Generate character descriptions + refs only after Studio phase.
+  useEffect(() => {
+    if (!sessionId) return
+
+    const needsCharacterAssets =
+      characterInfoList.length === 0 ||
+      characterInfoList.some((c) => !(c.description || "").trim() || !(c.imageBase64 || c.imageUrl))
+    if (!needsCharacterAssets) return
+
+    let cancelled = false
+    const langMap: Record<string, string> = {
+      english: "en",
+      malay: "bm",
+      mandarin: "zh",
+      chinese: "zh",
+      tamil: "ta",
+    }
+    const languageCode = langMap[config.language] || "en"
+
+    ;(async () => {
+      setIsRevealing(true)
+      setIsGeneratingCharacters(true)
+      try {
+        const result = await generateVideoAssets(sessionId, languageCode, "char_refs")
+        if (cancelled || !result.visual_audio_state) return
+
+        setVisualAudioState(result.visual_audio_state)
+
+        const roleToImage = new Map<string, string | null>()
+        for (const ref of result.visual_audio_state.character_ref_images || []) {
+          const b64 = (ref as { image_base64?: string }).image_base64 || null
+          roleToImage.set((ref as { role: string }).role, b64)
+        }
+
+        const mapped: CharacterInfo[] = []
+        const chars = result.visual_audio_state.character_descriptions?.characters || []
+        for (const c of chars) {
+          mapped.push({
+            role: (c as { role: string }).role,
+            type: (c as { type: "person" | "scammer" }).type,
+            description: (c as { description_for_image_generation: string }).description_for_image_generation,
+            imageUrl: null,
+            imageBase64: roleToImage.get((c as { role: string }).role) || null,
+          })
+        }
+
+        if (mapped.length > 0) {
+          setCharacterInfoList(mapped)
+        }
+      } catch {
+        // Keep UI usable with role-only fallback cards.
+      } finally {
+        if (!cancelled) {
+          setIsGeneratingCharacters(false)
+          setIsRevealing(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [sessionId, config.language, characterInfoList, setCharacterInfoList, setVisualAudioState])
 
   // Use characterInfoList if available, otherwise build from recommendedCharacters
   const characters: CharacterInfo[] =
@@ -116,7 +190,7 @@ export function PageCharacter() {
     }
   }
 
-  if (isRevealing && characters.length > 0) {
+  if (isRevealing || isGeneratingCharacters) {
     return (
       <div className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-4">

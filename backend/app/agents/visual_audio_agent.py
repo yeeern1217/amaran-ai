@@ -387,11 +387,50 @@ class VisualAudioAgent(BaseAgent):
             system, user, VeoScript.model_json_schema(), thinking="low"
         )
         translated = VeoScript.model_validate_json(raw)
-        logger.info(
-            "Dialogue-only translation done → %s (%d segments)",
-            target_language, len(translated.segments),
+
+        # Guardrail: some model responses may return partial segment lists.
+        # Always rebuild a full script in source order and keep source metadata.
+        src_segments = script.segments or []
+        translated_by_idx = {s.segment_index: s for s in (translated.segments or [])}
+        merged_segments: List[ScriptSegment] = []
+
+        translated_count = 0
+        for src in src_segments:
+            t = translated_by_idx.get(src.segment_index)
+            if t is not None and (t.veo_prompt or "").strip():
+                merged_segments.append(
+                    ScriptSegment(
+                        segment_index=src.segment_index,
+                        # Preserve source character bindings strictly.
+                        characters_involved=src.characters_involved,
+                        veo_prompt=t.veo_prompt,
+                    )
+                )
+                translated_count += 1
+            else:
+                # Fallback to source prompt for any missing segment.
+                merged_segments.append(src)
+
+        merged = VeoScript(
+            title=script.title,
+            total_duration_sec=script.total_duration_sec,
+            segments=merged_segments,
         )
-        return translated
+
+        if len(translated.segments or []) != len(src_segments):
+            logger.warning(
+                "Dialogue translation returned partial segments (%d/%d). Filled missing segments from source.",
+                len(translated.segments or []),
+                len(src_segments),
+            )
+
+        logger.info(
+            "Dialogue-only translation done → %s (%d/%d segments translated)",
+            target_language,
+            translated_count,
+            len(src_segments),
+        )
+        return merged
 
     # ------------------------------------------------------------------
     # Stage 3: Character descriptions
@@ -609,6 +648,7 @@ class VisualAudioAgent(BaseAgent):
         # Step 5b: Generate images for target segments
         new_entries: List[ClipRefEntry] = []
         seg_by_idx = {s.segment_index: s for s in script.segments}
+        role_to_desc = {r.role: r.description for r in char_refs}
 
         for entry in new_prompts:
             seg_idx = entry["segment_index"]
@@ -618,6 +658,19 @@ class VisualAudioAgent(BaseAgent):
 
             # Gather character ref paths
             char_paths = [role_to_path[r] for r in seg.characters_involved if r in role_to_path]
+            role_constraints = []
+            for role in seg.characters_involved:
+                desc = role_to_desc.get(role)
+                if desc:
+                    role_constraints.append(f"- {role}: {desc}")
+                else:
+                    role_constraints.append(f"- {role}: match the provided character reference image exactly")
+            identity_lock = (
+                "Reference images are authoritative for each named character. "
+                "Do NOT change gender, age, body type, face, hairstyle, skin tone, or outfit from references. "
+                "If scene text conflicts with references, references win."
+            )
+            role_constraints_text = "Character appearance lock:\n" + "\n".join(role_constraints)
 
             # Previous segment end as scene reference
             prev_end_path = out_dir / f"segment_{seg_idx - 1}_end.png" if seg_idx > 1 else None
@@ -633,6 +686,7 @@ class VisualAudioAgent(BaseAgent):
             start_text = (
                 f"Create the START frame for this clip. {start_prompt} "
                 f"Characters that MUST appear at least once across START+END for this segment: {', '.join(seg.characters_involved)}. "
+                f"{identity_lock} {role_constraints_text} "
                 "IMPORTANT: Any featureless/anonymous humanoid must remain featureless. No text in image."
             )
             parts = _build_clip_start_parts(char_paths, start_text, prev_end_path)
@@ -657,6 +711,7 @@ class VisualAudioAgent(BaseAgent):
                     f"Using the provided reference images (start frame + character reference image(s)), create the END frame: "
                     f"{entry['end_frame_prompt']} "
                     f"Characters that MUST appear at least once across START+END for this segment: {', '.join(seg.characters_involved)}. "
+                    f"{identity_lock} {role_constraints_text} "
                     "IMPORTANT: Keep any featureless humanoid characters as-is. No text in image."
                 )
                 end_parts = _build_clip_end_parts(start_path, char_paths, end_text)
@@ -712,10 +767,16 @@ class VisualAudioAgent(BaseAgent):
 
         for seg in script.segments:
             seg_idx = seg.segment_index
-            # Build prompt with character refs
+            # Build prompt with strong identity-lock instructions.
             char_list = ", ".join(seg.characters_involved)
+            identity_lock = (
+                "Identity lock: keep each named character exactly consistent with the provided references "
+                "and frame constraints (same face, age, body type, outfit, hairstyle, skin tone, and role). "
+                "Do not replace, swap, or hallucinate extra main characters. "
+                "If a scammer is featureless/anonymous in refs, keep them featureless."
+            )
             prompt = (
-                f"Using the provided reference images of ({char_list}), {seg.veo_prompt}"
+                f"Characters on screen: {char_list}. {identity_lock} {seg.veo_prompt}"
                 if seg.characters_involved else seg.veo_prompt
             )
 
@@ -730,6 +791,12 @@ class VisualAudioAgent(BaseAgent):
 
             # Interpolation mode: API doesn't allow reference_images with start/end frames
             use_refs = ref_images and first_image is None
+            if first_image and last_image:
+                prompt = (
+                    "The provided first and last frames are authoritative references. "
+                    "Preserve character identity and outfit continuity exactly between them. "
+                    + prompt
+                )
             veo_aspect = VIDEO_FORMAT_ASPECT.get(self._state.video_format, "9:16")
             config = types.GenerateVideosConfig(
                 aspect_ratio=veo_aspect,
@@ -877,6 +944,12 @@ def _generate_veo_clip_sync(client, kwargs: dict, out_path: Path) -> bool:
 _CLIP_REF_SYSTEM = """You are given the **full video script** (all segments). Output start and end frame prompts for **one specified segment only**.
 
 **Continuity and flow are critical.** (1) Within the segment: start and end frame = one 8-second story beat. (2) Between segments: start flows from previous end; end sets up next start.
+
+**Character identity lock (strict):**
+- Character reference images are authoritative for appearance.
+- Do NOT invent or alter gender, age, body type, face, hairstyle, skin tone, or outfit.
+- If script wording conflicts with references, references win.
+- Prefer wording like "as shown in the provided reference image" for each named character.
 
 1. **start_frame_prompt**: Used with character reference images. Describe scene/setting, camera/shot, lighting, character pose/expression. Include "Using the provided character reference image(s), place [character] in the following scene: ..." For scammer/featureless characters: explicitly state they must remain featureless. One still image, no motion, no text.
 

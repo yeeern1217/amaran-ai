@@ -1,0 +1,20 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY. A male Malaysian police officer in his late 30s. He has a neat, short haircut and a clean-shaven face. He is wearing a dark blue Royal Malaysia Police uniform with a silver badge and name tag on the chest, matching tactical trousers, and black leather boots. He stands with a professional and authoritative posture.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_other_d68646d5_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Mis Lim (Scam Victim)",
+    "description": "FULL BODY. A Malaysian woman in her early 60s of Chinese descent. She has short, salt-and-pepper hair styled in a simple bob. She wears a modest floral print blouse with long sleeves, loose-fitting dark gray trousers, and simple black slip-on shoes. She has a worried and weary expression, representing a retired clerk.",
+    "filename": "Mis_Lim_Scam_Victim_2x2_grid.png",
+    "path": "output\\scam_other_d68646d5_en\\character_refs\\Mis_Lim_Scam_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake Fund Recovery Agent",
+    "description": "FULL BODY. An anonymous, featureless human figure represented as a dark, shadowy silhouette. The figure wears a sharp, high-collar digital cloak that glows with faint, flickering binary code patterns. One hand is slightly raised, glowing with a cold, artificial light to represent digital deception.",
+    "filename": "Fake_Fund_Recovery_Agent_2x2_grid.png",
+    "path": "output\\scam_other_d68646d5_en\\character_refs\\Fake_Fund_Recovery_Agent_2x2_grid.png"
+  }
+]

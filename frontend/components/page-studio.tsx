@@ -404,6 +404,51 @@ export function PageStudio() {
           }
         }
 
+        if (result.video_package && typeof result.video_package === "object" && "sensitivity_report" in result.video_package) {
+          const sr = (result.video_package as { sensitivity_report?: {
+            project_id: string
+            passed: boolean
+            flags: Array<{
+              severity: "warning" | "critical"
+              issue_type: string
+              description: string
+              scene_id?: number
+              suggested_fix?: string
+              regulation_reference?: string
+            }>
+            compliance_summary: string
+            detailed_analysis: Array<{
+              category: string
+              status: "passed" | "warning" | "flagged"
+              analysis: string
+              elements_reviewed: string[]
+            }>
+            checked_against: string[]
+          } }).sensitivity_report
+          if (sr) {
+            setSensitivityReport({
+              projectId: sr.project_id,
+              passed: sr.passed,
+              flags: sr.flags.map((f) => ({
+                severity: f.severity,
+                issueType: f.issue_type,
+                description: f.description,
+                sceneId: f.scene_id ?? undefined,
+                suggestedFix: f.suggested_fix ?? undefined,
+                regulationReference: f.regulation_reference ?? undefined,
+              })),
+              complianceSummary: sr.compliance_summary,
+              detailedAnalysis: sr.detailed_analysis.map((a) => ({
+                category: a.category,
+                status: a.status,
+                analysis: a.analysis,
+                elementsReviewed: a.elements_reviewed,
+              })),
+              checkedAgainst: sr.checked_against,
+            })
+          }
+        }
+
         // Re-run safety review after scenes change
         setSafetyReviewing(true)
         setSafetyExpanded(true)

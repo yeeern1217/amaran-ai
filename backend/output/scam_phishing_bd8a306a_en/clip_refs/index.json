@@ -1,0 +1,26 @@
+[
+  {
+    "segment_index": 1,
+    "frame": "start",
+    "filename": "segment_1_start.png",
+    "path": "output\\scam_phishing_bd8a306a_en\\clip_refs\\segment_1_start.png"
+  },
+  {
+    "segment_index": 1,
+    "frame": "end",
+    "filename": "segment_1_end.png",
+    "path": "output\\scam_phishing_bd8a306a_en\\clip_refs\\segment_1_end.png"
+  },
+  {
+    "segment_index": 2,
+    "frame": "start",
+    "filename": "segment_2_start.png",
+    "path": "output\\scam_phishing_bd8a306a_en\\clip_refs\\segment_2_start.png"
+  },
+  {
+    "segment_index": 2,
+    "frame": "end",
+    "filename": "segment_2_end.png",
+    "path": "output\\scam_phishing_bd8a306a_en\\clip_refs\\segment_2_end.png"
+  }
+]

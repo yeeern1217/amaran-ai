@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY: A Malaysian male in his late 30s, athletic build, wearing a dark navy blue PDRM (Royal Malaysia Police) uniform with silver insignia on the shoulders and a formal peak cap. He wears polished black boots and stands with a professional, authoritative posture.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_impersonation_91a3a442_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png"
+  },
+  {
+    "role": "Elderly Victim (Victim)",
+    "description": "FULL BODY: An elderly Malaysian man in his late 60s, silver hair, wearing a traditional beige Baju Melayu with a simple sarong and leather sandals. He has a concerned expression and a lean, slightly hunched frame.",
+    "filename": "Elderly_Victim_Victim_2x2_grid.png",
+    "path": "output\\scam_impersonation_91a3a442_en\\character_refs\\Elderly_Victim_Victim_2x2_grid.png"
+  },
+  {
+    "role": "AI Voice Cloner (Scammer)",
+    "description": "FULL BODY: An anonymous featureless humanoid figure standing in a dark void. The figure is a solid matte-black silhouette with glowing blue digital circuitry patterns pulsing across its chest and limbs, representing artificial intelligence.",
+    "filename": "AI_Voice_Cloner_Scammer_2x2_grid.png",
+    "path": "output\\scam_impersonation_91a3a442_en\\character_refs\\AI_Voice_Cloner_Scammer_2x2_grid.png"
+  },
+  {
+    "role": "Fake Family Member (Scammer)",
+    "description": "FULL BODY: A featureless human silhouette that appears unstable, with horizontal digital glitch lines and static interference covering its entire form. The figure has a flickering white and grey noise texture, suggesting a synthetic imitation of a person.",
+    "filename": "Fake_Family_Member_Scammer_2x2_grid.png",
+    "path": "output\\scam_impersonation_91a3a442_en\\character_refs\\Fake_Family_Member_Scammer_2x2_grid.png"
+  }
+]

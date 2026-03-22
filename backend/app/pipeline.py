@@ -684,6 +684,13 @@ class PipelineOrchestrator:
         has_char_refs = agent._state.character_ref_images and len(agent._state.character_ref_images) > 0
         has_clip_refs = agent._state.clip_ref_images and len(agent._state.clip_ref_images) > 0
 
+        expected_segment_count = len(scenes_dicts)
+
+        def _script_is_compatible(script_obj) -> bool:
+            if not script_obj:
+                return False
+            return len(script_obj.segments or []) == expected_segment_count
+
         # Stage 1: Story
         if has_story:
             logger.info("[VA-PIPELINE] Stage 1/%d — Reusing existing ObfuscatedScamStory", total_stages)
@@ -714,8 +721,35 @@ class PipelineOrchestrator:
             logger.info("[VA-PIPELINE] Stage 2/%d — Dialogue translation done (%.1fs)",
                         total_stages, _time.time() - t0)
         elif has_script:
-            logger.info("[VA-PIPELINE] Stage 2/%d — Reusing existing VeoScript", total_stages)
-            script = agent._state.veo_script
+            # Same-language path: reuse only if script matches current scene count.
+            # This avoids carrying stale/partial scripts from prior preview/chat edits.
+            if _script_is_compatible(agent._state.veo_script):
+                logger.info("[VA-PIPELINE] Stage 2/%d — Reusing existing VeoScript", total_stages)
+                script = agent._state.veo_script
+            elif _script_is_compatible(agent._state.original_veo_script):
+                logger.info(
+                    "[VA-PIPELINE] Stage 2/%d — Existing VeoScript incompatible (%d vs %d segments); restoring original VeoScript",
+                    total_stages,
+                    len(agent._state.veo_script.segments or []),
+                    expected_segment_count,
+                )
+                script = agent._state.original_veo_script.model_copy(deep=True)
+                agent._state.veo_script = script
+                # Script changed; clip outputs are no longer valid.
+                agent._state.veo_clips = []
+            else:
+                t0 = _time.time()
+                logger.info(
+                    "[VA-PIPELINE] Stage 2/%d — Existing scripts incompatible; regenerating VeoScript (%d expected segments)",
+                    total_stages,
+                    expected_segment_count,
+                )
+                script = await agent.generate_veo_script(story, scenes_dicts)
+                agent._state.original_veo_script = script.model_copy(deep=True)
+                agent._state.veo_script = script
+                agent._state.veo_clips = []
+                logger.info("[VA-PIPELINE] Stage 2/%d — VeoScript regenerated (%.1fs)",
+                            total_stages, _time.time() - t0)
         else:
             t0 = _time.time()
             logger.info("[VA-PIPELINE] Stage 2/%d — Generating VeoScript...", total_stages)

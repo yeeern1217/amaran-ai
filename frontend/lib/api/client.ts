@@ -171,17 +171,16 @@ export interface VeoScript {
 }
 
 export interface CharacterDescription {
-  character_name: string;
-  visual_description: string;
-  outfit_and_accessories: string;
-  facial_expression_default: string;
-  posture_and_mannerisms: string;
-  ethnicity_and_age: string;
+  role: string;
+  type: "person" | "scammer";
+  description_for_image_generation: string;
 }
 
 export interface CharacterRefImage {
-  character_name: string;
-  image_path: string;
+  role: string;
+  description: string;
+  filename: string;
+  path: string;
   image_base64?: string;
 }
 
@@ -744,6 +743,12 @@ export interface CaptionsResponse {
   captions: Record<string, CaptionEntry[]>;
 }
 
+export interface EnsureCaptionsRequest {
+  session_id: string;
+  language_codes: string[];
+  source_language_code?: string;
+}
+
 /**
  * Fetch caption/dialogue texts per segment per language from the video package.
  */
@@ -751,6 +756,18 @@ export async function getCaptions(
   sessionId: string
 ): Promise<CaptionsResponse> {
   return fetchApi<CaptionsResponse>(`/captions/${sessionId}`);
+}
+
+/**
+ * Ensure caption text exists for selected languages without regenerating clips.
+ */
+export async function ensureCaptions(
+  request: EnsureCaptionsRequest
+): Promise<CaptionsResponse> {
+  return fetchApi<CaptionsResponse>("/captions/ensure", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
 }
 
 /**

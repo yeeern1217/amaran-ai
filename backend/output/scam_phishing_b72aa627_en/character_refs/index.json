@@ -1,0 +1,23 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY. A Malaysian male in his late 30s with short, neat black hair. He is wearing a formal dark blue Royal Malaysia Police (PDRM) uniform with silver buttons, epaulettes, and a visible name tag on his chest. He wears black trousers and polished black leather boots.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_phishing_b72aa627_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "image_base64": null
+  },
+  {
+    "role": "Young Victim",
+    "description": "FULL BODY. A young Malaysian man in his early 20s with a modern undercut hairstyle. He is wearing a casual festive outfit consisting of a red and gold patterned Batik shirt with short sleeves, dark denim jeans, and white sneakers.",
+    "filename": "Young_Victim_2x2_grid.png",
+    "path": "output\\scam_phishing_b72aa627_en\\character_refs\\Young_Victim_2x2_grid.png",
+    "image_base64": null
+  },
+  {
+    "role": "Anonymous Scammer",
+    "description": "FULL BODY. An anonymous human figure depicted as a featureless, pitch-black silhouette. The figure wears a dark hooded sweatshirt with the hood pulled up, obscuring all facial features, and dark trousers. A faint digital static effect outlines the figure.",
+    "filename": "Anonymous_Scammer_2x2_grid.png",
+    "path": "output\\scam_phishing_b72aa627_en\\character_refs\\Anonymous_Scammer_2x2_grid.png",
+    "image_base64": null
+  }
+]

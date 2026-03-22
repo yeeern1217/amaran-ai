@@ -1,0 +1,23 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY. A Malaysian male in his late 30s with a professional, authoritative posture. He is wearing a crisp, formal Royal Malaysia Police (PDRM) dark blue uniform, complete with silver badges, name tag, and a peaked police cap. He has short, neat black hair and a serious expression, standing in a full-length pose.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_phishing_b0b79f42_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "image_base64": null
+  },
+  {
+    "role": "Young Resident (Victim)",
+    "description": "FULL BODY. A Malaysian male in his mid-20s representing a young professional. He has a clean-cut appearance with short black hair and is wearing a casual festive-themed short-sleeve red batik shirt with dark chinos and casual loafers. He is shown from head to toe with an average build.",
+    "filename": "Young_Resident_Victim_2x2_grid.png",
+    "path": "output\\scam_phishing_b0b79f42_en\\character_refs\\Young_Resident_Victim_2x2_grid.png",
+    "image_base64": null
+  },
+  {
+    "role": "Fake Ang Pow Scammer (Antagonist)",
+    "description": "FULL BODY. A featureless, anonymous human silhouette rendered in a semi-transparent glitch effect. The figure is entirely void of facial features or skin details, appearing as a dark, shadowy entity. It wears a non-descript hooded sweatshirt and long trousers, with a faint digital data-stream texture flowing through the silhouette.",
+    "filename": "Fake_Ang_Pow_Scammer_Antagonist_2x2_grid.png",
+    "path": "output\\scam_phishing_b0b79f42_en\\character_refs\\Fake_Ang_Pow_Scammer_Antagonist_2x2_grid.png",
+    "image_base64": null
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "role": "Inspektor Amir (Law Enforcement Narrator)",
+    "description": "FULL BODY. A male Malaysian police inspector in his late 30s. He is wearing a crisp, dark navy blue Royal Malaysia Police (PDRM) uniform including a peaked cap, silver badges on the chest, and tactical duty belt. He has a clean-shaven face, short-cropped black hair, and polished black boots.",
+    "filename": "Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "path": "output\\scam_other_de4c9d85_en\\character_refs\\Inspektor_Amir_Law_Enforcement_Narrator_2x2_grid.png",
+    "image_base64": null
+  },
+  {
+    "role": "Young Victim",
+    "description": "FULL BODY. A Malaysian male in his early 20s. He is wearing a casual white button-down shirt tucked into slim-fit beige chinos with brown loafers. He has a youthful appearance with short, neat black hair and a slim build, representing a modern young professional.",
+    "filename": "Young_Victim_2x2_grid.png",
+    "path": "output\\scam_other_de4c9d85_en\\character_refs\\Young_Victim_2x2_grid.png",
+    "image_base64": null
+  },
+  {
+    "role": "\"PDRM Officer\" (Impersonator Scammer)",
+    "description": "FULL BODY. An anonymous, featureless human silhouette made of flickering digital static and deep shadows. The figure wears a dark, semi-transparent police officer's cap, but has no face. A faint red glowing pulse emanates from the center of its chest.",
+    "filename": "PDRM_Officer_Impersonator_Scammer_2x2_grid.png",
+    "path": "output\\scam_other_de4c9d85_en\\character_refs\\PDRM_Officer_Impersonator_Scammer_2x2_grid.png",
+    "image_base64": null
+  },
+  {
+    "role": "\"LHDN Official\" (Phishing Scammer)",
+    "description": "FULL BODY. A featureless human figure with a smooth, matte-black surface like a mannequin. It is dressed in a faint, holographic outline of a formal suit. Its head is replaced by a glowing, pixelated government emblem that glitches intermittently.",
+    "filename": "LHDN_Official_Phishing_Scammer_2x2_grid.png",
+    "path": "output\\scam_other_de4c9d85_en\\character_refs\\LHDN_Official_Phishing_Scammer_2x2_grid.png",
+    "image_base64": null
+  }
+]

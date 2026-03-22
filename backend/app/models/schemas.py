@@ -473,6 +473,7 @@ class CharacterRefImage(BaseModel):
     description: str
     filename: str
     path: str
+    image_base64: Optional[str] = Field(default=None, description="Base64 image data for UI preview")
 
 
 class ClipRefFramePrompts(BaseModel):

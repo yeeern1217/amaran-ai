@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react"
 import { useApp } from "@/lib/app-context"
-import { exportStitchedVideo, generateVideoAssets, getCaptions } from "@/lib/api"
+import { ensureCaptions, exportStitchedVideo, generateVideoAssets, getCaptions } from "@/lib/api"
 import type { CaptionEntry } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -58,6 +58,7 @@ export function PagePremiere() {
   }
   const defaultLangCode = langMap[config.language] || "en"
   const [captionLangs, setCaptionLangs] = useState<string[]>([])
+  const [pendingCaptionLangs, setPendingCaptionLangs] = useState<string[]>([])
   const [clipLang, setClipLang] = useState<string>(defaultLangCode)
   const [pendingClipLang, setPendingClipLang] = useState<string>(defaultLangCode)
   const [isRegenerating, setIsRegenerating] = useState(false)
@@ -88,13 +89,20 @@ export function PagePremiere() {
     }
   }, [activeClip])
 
+  const refreshCaptions = useCallback(async () => {
+    if (!sessionId) return
+    try {
+      const res = await getCaptions(sessionId)
+      setCaptionData(res.captions)
+    } catch {
+      // captions are optional
+    }
+  }, [sessionId])
+
   // Fetch caption data from backend
   useEffect(() => {
-    if (!sessionId) return
-    getCaptions(sessionId)
-      .then((res) => setCaptionData(res.captions))
-      .catch(() => {})  // captions are optional
-  }, [sessionId])
+    refreshCaptions()
+  }, [refreshCaptions])
 
   function getClipSrc(clipIndex: number): string | null {
     const clip = clips[clipIndex]
@@ -124,11 +132,23 @@ export function PagePremiere() {
     return lines
   }
 
+  function extractSpeakerDialogue(text: string): string[] {
+    const lines: string[] = []
+    const re = /(?:^|[.;])\s*[^.\n]{0,80}\b(?:says?|asks?|replies?|whispers?|shouts?)\s*:\s*([^.;\n]+)/gi
+    let m: RegExpExecArray | null
+    while ((m = re.exec(text)) !== null) {
+      const value = (m[1] || "").trim()
+      if (value) lines.push(value)
+    }
+    return lines
+  }
+
   function normalizeCaptionText(text: string): string[] {
     const quoted = extractQuotedDialogue(text)
     if (quoted.length > 0) return quoted
-    const trimmed = (text || "").trim()
-    return trimmed ? [trimmed] : []
+    const speaker = extractSpeakerDialogue(text)
+    if (speaker.length > 0) return speaker
+    return []
   }
 
   /** Build caption lines for the active clip based on selected caption languages. */
@@ -152,7 +172,7 @@ export function PagePremiere() {
       if (visualAudioState?.veo_script && lang === clipLang) {
         const seg = visualAudioState.veo_script.segments.find((s) => s.segment_index === segId)
         if (seg?.veo_prompt) {
-          lines.push(...extractQuotedDialogue(seg.veo_prompt))
+          lines.push(...normalizeCaptionText(seg.veo_prompt))
         }
       }
     }
@@ -177,33 +197,67 @@ export function PagePremiere() {
   }
 
   function toggleCaption(code: string) {
-    setCaptionLangs((prev) =>
+    setPendingCaptionLangs((prev) =>
       prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     )
   }
 
-  const hasPendingLanguageChange = pendingClipLang !== clipLang
+  function areLanguageSetsEqual(a: string[], b: string[]): boolean {
+    if (a.length !== b.length) return false
+    const sa = new Set(a)
+    if (sa.size !== new Set(b).size) return false
+    return b.every((x) => sa.has(x))
+  }
 
-  // Apply pending language change. Requires Veo regeneration.
-  async function handleRegenerateClipLanguage() {
-    if (!sessionId || !hasPendingLanguageChange) return
+  const hasPendingLanguageChange = pendingClipLang !== clipLang
+  const hasPendingCaptionChange = !areLanguageSetsEqual(pendingCaptionLangs, captionLangs)
+  const hasPendingChanges = hasPendingLanguageChange || hasPendingCaptionChange
+
+  // Apply pending language changes.
+  async function handleApplyPendingLanguages() {
+    if (!sessionId || !hasPendingChanges) return
     setIsRegenerating(true)
     setRegenError(null)
     try {
-      const result = await generateVideoAssets(sessionId, pendingClipLang)
-      if (result.visual_audio_state) {
-        setClipLang(result.language_code)
-        setPendingClipLang(result.language_code)
-        setVisualAudioState(result.visual_audio_state)
-        setActiveClip(0)
+      let resolvedClipLang = clipLang
+
+      if (hasPendingLanguageChange) {
+        const result = await generateVideoAssets(sessionId, pendingClipLang)
+        if (result.visual_audio_state) {
+          resolvedClipLang = result.language_code
+          setClipLang(result.language_code)
+          setPendingClipLang(result.language_code)
+          setVisualAudioState(result.visual_audio_state)
+          setActiveClip(0)
+        }
+        if (result.language_code !== pendingClipLang) {
+          setRegenError(`Language '${pendingClipLang}' is not available in this package yet; showing '${result.language_code}'.`)
+        }
       }
-      if (result.language_code !== pendingClipLang) {
-        setRegenError(`Language '${pendingClipLang}' is not available in this package yet; showing '${result.language_code}'.`)
+
+      const missingCaptionLangs = pendingCaptionLangs.filter((lang) => !captionData[lang])
+      if (missingCaptionLangs.length > 0) {
+        const ensured = await ensureCaptions({
+          session_id: sessionId,
+          language_codes: missingCaptionLangs,
+          source_language_code: clipLang,
+        })
+        setCaptionData((prev) => ({ ...prev, ...ensured.captions }))
+      }
+
+      if (pendingCaptionLangs.length > 0 || missingCaptionLangs.length > 0 || hasPendingLanguageChange) {
+        await refreshCaptions()
+      }
+
+      setCaptionLangs([...pendingCaptionLangs])
+      if (!hasPendingLanguageChange) {
+        setPendingClipLang(resolvedClipLang)
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to regenerate clips"
       if (msg.toLowerCase().includes("not in package")) {
         setPendingClipLang(clipLang)
+        setPendingCaptionLangs(captionLangs)
         setRegenError(
           "This language was not generated in the current video package. Go back to Configuration and regenerate for that language first."
         )
@@ -453,7 +507,7 @@ export function PagePremiere() {
                         className="flex items-center gap-2.5 cursor-pointer group"
                       >
                         <Checkbox
-                          checked={captionLangs.includes(lang.code)}
+                          checked={pendingCaptionLangs.includes(lang.code)}
                           onCheckedChange={() => toggleCaption(lang.code)}
                         />
                         <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
@@ -463,9 +517,9 @@ export function PagePremiere() {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {captionLangs.length === 0
+                    {pendingCaptionLangs.length === 0
                       ? "No captions selected"
-                      : `${captionLangs.length} caption${captionLangs.length > 1 ? "s" : ""} selected`}
+                      : `${pendingCaptionLangs.length} caption${pendingCaptionLangs.length > 1 ? "s" : ""} selected`}
                   </p>
                 </div>
 
@@ -495,8 +549,8 @@ export function PagePremiere() {
                   <Button
                     size="sm"
                     className="mt-1"
-                    disabled={isRegenerating || !sessionId || !hasPendingLanguageChange}
-                    onClick={handleRegenerateClipLanguage}
+                    disabled={isRegenerating || !sessionId || !hasPendingChanges}
+                    onClick={handleApplyPendingLanguages}
                   >
                     {isRegenerating ? (
                       <>
@@ -516,7 +570,7 @@ export function PagePremiere() {
                 </div>
               )}
 
-              {!isRegenerating && hasPendingLanguageChange && (
+              {!isRegenerating && hasPendingChanges && (
                 <p className="mt-3 text-xs text-amber-300">
                   Pending changes detected. Click Generate Video to apply them.
                 </p>
