@@ -95,6 +95,16 @@ coverage/
 backend/output/
 
 # ===================
+# Large binary/media assets
+# ===================
+frontend/public/demo-assets/
+backend/notebooks/veo_clips/
+*.mp4
+*.MP4
+*.mov
+*.avi
+
+# ===================
 # Misc
 # ===================
 *.pem
