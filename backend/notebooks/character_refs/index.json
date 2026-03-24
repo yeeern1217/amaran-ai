@@ -1,0 +1,26 @@
+[
+  {
+    "role": "Retiree (Victim)",
+    "description": "Full-body Malaysian Malay man in his late 60s, short thinning grey hair, wearing a traditional batik shirt in soft earthy tones, khaki trousers, and leather loafers with a simple silver wristwatch.",
+    "filename": "Retiree_Victim_2x2_grid.png",
+    "path": "C:\\Users\\chengy57\\Documents\\scam-shield\\backend\\notebooks\\character_refs\\Retiree_Victim_2x2_grid.png"
+  },
+  {
+    "role": "Fake Pos Laju representative",
+    "description": "Full-body featureless humanoid with a medium build, light grey shading, wearing a suggestion of a professional headset and a faint outline of a high-visibility utility vest over a polo shirt.",
+    "filename": "Fake_Pos_Laju_representative_2x2_grid.png",
+    "path": "C:\\Users\\chengy57\\Documents\\scam-shield\\backend\\notebooks\\character_refs\\Fake_Pos_Laju_representative_2x2_grid.png"
+  },
+  {
+    "role": "Fake senior police officer",
+    "description": "Full-body featureless humanoid with a broad-shouldered build, neutral grey shading, wearing a silhouette of a formal police uniform jacket and a cap with subtle robotic glowing lines on the chest.",
+    "filename": "Fake_senior_police_officer_2x2_grid.png",
+    "path": "C:\\Users\\chengy57\\Documents\\scam-shield\\backend\\notebooks\\character_refs\\Fake_senior_police_officer_2x2_grid.png"
+  },
+  {
+    "role": "Fake Bank Negara Malaysia representative",
+    "description": "Full-body featureless humanoid with a slim build, light neutral shading, wearing a sharp outline of a formal business suit and tie with a smooth metallic surface texture.",
+    "filename": "Fake_Bank_Negara_Malaysia_representative_2x2_grid.png",
+    "path": "C:\\Users\\chengy57\\Documents\\scam-shield\\backend\\notebooks\\character_refs\\Fake_Bank_Negara_Malaysia_representative_2x2_grid.png"
+  }
+]
