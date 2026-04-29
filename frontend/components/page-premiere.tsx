@@ -20,7 +20,6 @@ import {
   Instagram,
   Music2,
   Play,
-  Pause,
   CheckCircle2,
   Megaphone,
   Film,
@@ -56,13 +55,15 @@ export function PagePremiere() {
     setInstagramPublishError,
     setCurrentStep,
   } = useApp()
+  const previewContainerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [activeClip, setActiveClip] = useState(0)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const autoPlayNextRef = useRef(false)
-  const [stitchedVideoUrl, setStitchedVideoUrl] = useState<string | null>(null)
   const [isLoadingStitched, setIsLoadingStitched] = useState(false)
+  const [stitchedPreviewSrc, setStitchedPreviewSrc] = useState<string | null>(null)
+  const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false)
 
   // Caption & language state
   const langMap: Record<string, string> = {
@@ -77,6 +78,7 @@ export function PagePremiere() {
 
   // Caption data from backend (per language, per segment)
   const [captionData, setCaptionData] = useState<Record<string, CaptionEntry[]>>({})
+  const [captionTrackSrc, setCaptionTrackSrc] = useState<string | null>(null)
 
   // Export state
   const [isExporting, setIsExporting] = useState(false)
@@ -94,7 +96,8 @@ export function PagePremiere() {
 
   const clips = visualAudioState?.veo_clips ?? []
   const totalDuration = scenes.reduce((sum, s) => sum + (s.duration || 8), 0)
-  const hasContinuousVideo = Boolean(stitchedVideoUrl)
+  // Prefer stitched full-length playback for a stable fullscreen demo.
+  const hasContinuousVideo = Boolean(stitchedPreviewSrc)
 
   const allFactsVerified =
     factCheck.scam_name_verified &&
@@ -109,6 +112,22 @@ export function PagePremiere() {
       videoRef.current.playbackRate = playbackSpeed
     }
   }, [playbackSpeed])
+
+  // Track fullscreen state so caption overlay can scale up for readability.
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      const fullscreenEl = document.fullscreenElement
+      setIsPreviewFullscreen(
+        fullscreenEl === previewContainerRef.current || fullscreenEl === videoRef.current
+      )
+    }
+
+    onFullscreenChange()
+    document.addEventListener("fullscreenchange", onFullscreenChange)
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange)
+    }
+  }, [])
 
   // In fallback clip-by-clip mode, switching clips resets playback.
   useEffect(() => {
@@ -128,49 +147,48 @@ export function PagePremiere() {
     }
   }, [activeClip, playbackSpeed, hasContinuousVideo])
 
-  // Load stitched preview once so playback is seamless across all scenes.
+  // Load stitched full-length video for Screening Room preview.
+  // Fallback to per-clip playback if stitched export is unavailable.
   useEffect(() => {
-    let cancelled = false
     if (!sessionId || clips.length === 0) {
-      setStitchedVideoUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev)
-        return null
-      })
+      setStitchedPreviewSrc(null)
       return
     }
 
+    let cancelled = false
+    let objectUrl: string | null = null
+
     setIsLoadingStitched(true)
-    exportStitchedVideo(sessionId, [])
+    exportStitchedVideo(sessionId)
       .then((blob) => {
         if (cancelled) return
-        if (blob.size === 0) {
-          setStitchedVideoUrl((prev) => {
-            if (prev) URL.revokeObjectURL(prev)
-            return null
-          })
+        if (!blob || blob.size === 0) {
+          setStitchedPreviewSrc(null)
           return
         }
-        const url = URL.createObjectURL(blob)
-        setStitchedVideoUrl((prev) => {
-          if (prev) URL.revokeObjectURL(prev)
-          return url
-        })
+
+        objectUrl = URL.createObjectURL(blob)
+        setStitchedPreviewSrc(objectUrl)
+        setActiveClip(0)
+        setIsPlaying(false)
       })
       .catch((err) => {
-        console.warn("[Premiere] Failed to load stitched preview, using clip fallback:", err)
+        console.warn("[Premiere] stitched preview unavailable, falling back to clips", err)
         if (!cancelled) {
-          setStitchedVideoUrl((prev) => {
-            if (prev) URL.revokeObjectURL(prev)
-            return null
-          })
+          setStitchedPreviewSrc(null)
         }
       })
       .finally(() => {
-        if (!cancelled) setIsLoadingStitched(false)
+        if (!cancelled) {
+          setIsLoadingStitched(false)
+        }
       })
 
     return () => {
       cancelled = true
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl)
+      }
     }
   }, [sessionId, clips.length, clipLang])
 
@@ -195,6 +213,45 @@ export function PagePremiere() {
         }
       })
   }, [sessionId, scenes, defaultLangCode])
+
+  // Build a WebVTT track for native fullscreen captions.
+  useEffect(() => {
+    if (captionLangs.length === 0 || clips.length === 0) {
+      setCaptionTrackSrc(null)
+      return
+    }
+
+    const cues: string[] = []
+    let cueNumber = 1
+    let startSeconds = 0
+
+    for (let i = 0; i < clips.length; i++) {
+      const lines = getCaptionTextForClip(i)
+      const duration = getClipDurationSeconds(i)
+      if (lines.length > 0) {
+        const endSeconds = startSeconds + duration
+        cues.push(`${cueNumber}`)
+        cues.push(`${formatVttTimestamp(startSeconds)} --> ${formatVttTimestamp(endSeconds)}`)
+        cues.push(lines.join("\n"))
+        cues.push("")
+        cueNumber += 1
+      }
+      startSeconds += duration
+    }
+
+    if (cues.length === 0) {
+      setCaptionTrackSrc(null)
+      return
+    }
+
+    const trackBlob = new Blob([`WEBVTT\n\n${cues.join("\n")}`], { type: "text/vtt" })
+    const trackUrl = URL.createObjectURL(trackBlob)
+    setCaptionTrackSrc(trackUrl)
+
+    return () => {
+      URL.revokeObjectURL(trackUrl)
+    }
+  }, [captionLangs, captionData, clips, scenes, visualAudioState])
 
   function getClipSrc(clipIndex: number): string | null {
     const clip = clips[clipIndex]
@@ -229,6 +286,15 @@ export function PagePremiere() {
     if (quoted.length > 0) return quoted
     const trimmed = (text || "").trim()
     return trimmed ? [trimmed] : []
+  }
+
+  function formatVttTimestamp(totalSeconds: number): string {
+    const safe = Math.max(0, totalSeconds)
+    const hours = Math.floor(safe / 3600)
+    const minutes = Math.floor((safe % 3600) / 60)
+    const seconds = Math.floor(safe % 60)
+    const milliseconds = Math.floor((safe - Math.floor(safe)) * 1000)
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(milliseconds).padStart(3, "0")}`
   }
 
   /** Build caption lines for the active clip based on selected caption languages. */
@@ -545,7 +611,7 @@ export function PagePremiere() {
   ])
 
   const currentClipSrc = getClipSrc(activeClip)
-  const activeVideoSrc = stitchedVideoUrl || currentClipSrc
+  const activeVideoSrc = stitchedPreviewSrc ?? currentClipSrc
   const currentScene = getSceneForClip(activeClip)
 
   const formatLabel =
@@ -555,6 +621,19 @@ export function PagePremiere() {
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full">
+      <style jsx global>{`
+        video::cue {
+          background: rgba(0, 0, 0, 0.72);
+          color: #fff;
+          font-size: 1rem;
+          line-height: 1.35;
+        }
+
+        video:fullscreen::cue {
+          font-size: 3vh;
+          line-height: 1.45;
+        }
+      `}</style>
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold text-foreground text-balance tracking-tight">
           Screening Room
@@ -593,7 +672,10 @@ export function PagePremiere() {
               {clips.length > 0 ? (
                 <>
                   {/* Video */}
-                  <div className="relative rounded-xl border border-border/40 overflow-hidden aspect-video bg-black w-full group">
+                  <div
+                    ref={previewContainerRef}
+                    className="relative rounded-xl border border-border/40 overflow-hidden aspect-video bg-black w-full group"
+                  >
                     {activeVideoSrc ? (
                       <video
                         ref={videoRef}
@@ -607,7 +689,18 @@ export function PagePremiere() {
                         onPlay={() => setIsPlaying(true)}
                         onPause={() => setIsPlaying(false)}
                         onTimeUpdate={handleVideoTimeUpdate}
-                      />
+                      >
+                        {isPreviewFullscreen && captionTrackSrc && (
+                          <track
+                            key={captionTrackSrc}
+                            kind="subtitles"
+                            src={captionTrackSrc}
+                            srcLang={captionLangs[0] || "en"}
+                            label="Captions"
+                            default
+                          />
+                        )}
+                      </video>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="flex flex-col items-center gap-3 text-center p-6">
@@ -623,25 +716,34 @@ export function PagePremiere() {
                         Preparing seamless playback...
                       </div>
                     )}
-                    {activeVideoSrc && !hasContinuousVideo && (
-                      <button
-                        onClick={handlePlayPause}
-                        className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-colors group"
-                      >
-                        {!isPlaying && (
-                          <div className="size-16 rounded-full bg-teal-500/20 backdrop-blur-sm flex items-center justify-center shadow-[0_0_20px_oklch(0.87_0.17_175/0.15)] opacity-80 group-hover:opacity-100 transition-opacity">
-                            <Play className="size-8 text-teal-400 ml-1" />
-                          </div>
-                        )}
-                      </button>
+                    {activeVideoSrc && !hasContinuousVideo && !isPlaying && (
+                      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                        <button
+                          onClick={handlePlayPause}
+                          className="pointer-events-auto size-16 rounded-full bg-teal-500/20 backdrop-blur-sm flex items-center justify-center shadow-[0_0_20px_oklch(0.87_0.17_175/0.15)] opacity-80 hover:opacity-100 transition-opacity"
+                          aria-label="Play video"
+                        >
+                          <Play className="size-8 text-teal-400 ml-1" />
+                        </button>
+                      </div>
                     )}
                     {/* Caption overlay */}
-                    {getCaptionTextForClip(activeClip).length > 0 && (
-                      <div className="absolute bottom-4 left-4 right-4 pointer-events-none flex flex-col items-center gap-1">
+                    {!isPreviewFullscreen && getCaptionTextForClip(activeClip).length > 0 && (
+                      <div
+                        className={cn(
+                          "absolute left-4 right-4 pointer-events-none flex flex-col items-center",
+                          isPreviewFullscreen ? "bottom-8 gap-2" : "bottom-4 gap-1"
+                        )}
+                      >
                         {getCaptionTextForClip(activeClip).map((line, i) => (
                           <span
                             key={i}
-                            className="inline-block bg-black/70 text-white text-sm px-3 py-1 rounded leading-snug text-center max-w-[90%]"
+                            className={cn(
+                              "inline-block bg-black/70 text-white rounded leading-snug text-center",
+                              isPreviewFullscreen
+                                ? "text-lg md:text-xl px-5 py-2 max-w-[94%]"
+                                : "text-sm px-3 py-1 max-w-[90%]"
+                            )}
                           >
                             {line}
                           </span>
@@ -663,14 +765,9 @@ export function PagePremiere() {
                       Previous
                     </Button>
                     <div className="flex items-center gap-2">
-                      {activeVideoSrc && (
-                        <Button variant="outline" size="sm" onClick={handlePlayPause} className="gap-2">
-                          {isPlaying ? <><Pause className="size-4" />Pause</> : <><Play className="size-4" />Play</>}
-                        </Button>
-                      )}
                       {/* Speed controls */}
                       <div className="flex items-center gap-1 ml-1">
-                        {[1, 1.5, 2, 4].map((speed) => (
+                        {[1, 1.5, 2, 4, 6].map((speed) => (
                           <Button
                             key={speed}
                             variant={playbackSpeed === speed ? "default" : "ghost"}

@@ -26,7 +26,7 @@ export function PageSafety() {
 
   // Simulate a brief loading animation, then show completion
   useEffect(() => {
-    const timer = setTimeout(() => setIsRunning(false), 6000)
+    const timer = setTimeout(() => setIsRunning(false), 1000)
     return () => clearTimeout(timer)
   }, [])
 

@@ -71,8 +71,13 @@ import {
 
 // ==================== Helpers ====================
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function delay(_ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 1000));
+}
+
+/** Chat responses get an extra second so the AI feels like it's thinking. */
+function chatDelay(): Promise<void> {
+  return delay(1000).then(() => delay(1000));
 }
 
 function createFrontendFactCheck(
@@ -463,7 +468,7 @@ export async function chatFactSheet(
   // Try mock preset first (happy-path demo)
   const preset = findPreset(message, MOCK_FACTSHEET_CHAT_PRESETS);
   if (preset) {
-    await delay(7500);
+    await chatDelay();
     return {
       response: preset.response,
       fact_check: preset.updatedFactCheck,
@@ -481,7 +486,7 @@ export async function chatFactSheet(
     }
   }
 
-  await delay(7500);
+  await chatDelay();
   return {
     response: MOCK_FACTSHEET_CHAT_DEFAULT_RESPONSE,
     fact_check: createFrontendFactCheck(MOCK_FACT_SHEET),
@@ -500,7 +505,7 @@ export async function chatVideoPackage(
   // Try mock preset first (happy-path demo)
   const preset = findPreset(message, MOCK_VIDEO_CHAT_PRESETS);
   if (preset) {
-    await delay(7500);
+    await chatDelay();
     return {
       session_id: sessionId,
       response: preset.response,
@@ -523,7 +528,7 @@ export async function chatVideoPackage(
     }
   }
 
-  await delay(7500);
+  await chatDelay();
   return {
     session_id: sessionId,
     response: MOCK_VIDEO_CHAT_DEFAULT_RESPONSE,
@@ -540,7 +545,7 @@ export async function chatCharacterRefinement(
   // Try mock preset first (happy-path demo)
   const preset = findPreset(request.message, MOCK_CHARACTER_CHAT_PRESETS);
   if (preset) {
-    await delay(10500);
+    await chatDelay();
     return {
       session_id: request.session_id,
       response: preset.response,
@@ -568,7 +573,7 @@ export async function chatCharacterRefinement(
     }
   }
 
-  await delay(10500);
+  await chatDelay();
   return {
     session_id: request.session_id,
     response: MOCK_CHARACTER_CHAT_DEFAULT_RESPONSE,
@@ -592,7 +597,7 @@ export async function chatPreviewFrames(
   // Try mock preset first (happy-path demo)
   const preset = findPreset(request.message, MOCK_PREVIEW_CHAT_PRESETS);
   if (preset) {
-    await delay(7500);
+    await chatDelay();
     return {
       response: preset.response,
       updated_frames: preset.updatedPreviewState,
@@ -613,7 +618,7 @@ export async function chatPreviewFrames(
     }
   }
 
-  await delay(7500);
+  await chatDelay();
   return {
     response: MOCK_PREVIEW_CHAT_DEFAULT_RESPONSE,
     updated_frames: null,
@@ -634,7 +639,7 @@ export async function chatSocialStrategy(
   // Try mock preset first (happy-path demo)
   const preset = findPreset(message, MOCK_SOCIAL_CHAT_PRESETS);
   if (preset) {
-    await delay(7500);
+    await chatDelay();
     return {
       session_id: sessionId,
       response: preset.response,
@@ -654,7 +659,7 @@ export async function chatSocialStrategy(
     }
   }
 
-  await delay(7500);
+  await chatDelay();
   return {
     session_id: sessionId,
     response: MOCK_SOCIAL_CHAT_DEFAULT_RESPONSE,
@@ -926,7 +931,15 @@ export async function exportStitchedVideo(
 
 /** Generate SRT subtitle content from MOCK_CAPTIONS for the given languages. */
 function buildSrtFromMockCaptions(languages: string[]): string {
-  const segmentCount = MOCK_CAPTIONS.en?.length ?? 13;
+  const requestedLanguages =
+    languages.length > 0 ? languages : Object.keys(MOCK_CAPTIONS);
+  const segmentCount = requestedLanguages.reduce((maxCount, lang) => {
+    const maxSegmentForLang = (MOCK_CAPTIONS[lang] ?? []).reduce(
+      (maxSegment, entry) => Math.max(maxSegment, entry.segment_id),
+      0
+    );
+    return Math.max(maxCount, maxSegmentForLang);
+  }, 0);
   const durationPerSegment = 8; // seconds
   const lines: string[] = [];
   let idx = 1;

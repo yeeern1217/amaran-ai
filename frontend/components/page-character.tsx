@@ -45,7 +45,7 @@ export function PageCharacter() {
 
   // Brief loading state before showing characters
   useEffect(() => {
-    const timer = setTimeout(() => setIsRevealing(false), 5000)
+    const timer = setTimeout(() => setIsRevealing(false), 1000)
     return () => clearTimeout(timer)
   }, [])
 

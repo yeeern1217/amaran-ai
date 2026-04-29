@@ -300,7 +300,7 @@ export function PageBriefing() {
           })
         }
       } else {
-        await new Promise((r) => setTimeout(r, 3600))
+        await new Promise((r) => setTimeout(r, 1000))
         setChatMessages((prev) => [
           ...prev,
           {

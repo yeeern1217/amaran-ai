@@ -778,10 +778,15 @@ export const MOCK_PREVIEW_FRAMES: PreviewFrame[] = [
 // ==================== Captions ====================
 
 export const MOCK_CAPTIONS: Record<string, Array<{ segment_id: number; text: string }>> = {
-  en: MOCK_SCENES.map((s) => ({
-    segment_id: s.scene_id,
-    text: s.audio_script || "(no dialogue)",
-  })),
+  en: [
+    ...MOCK_SCENES.slice(0, 10).map((s) => ({
+      segment_id: s.scene_id,
+      text: s.audio_script || "(no dialogue)",
+    })),
+    { segment_id: 11, text: 'Narrator: "To avoid this, hang up immediately if you receive an unexpected call about suspicious parcels."' },
+    { segment_id: 12, text: 'Narrator: "Never transfer money to personal accounts for verification."' },
+    { segment_id: 13, text: 'Narrator: "Verify claims by calling NSRC at 997 or visit a police station."' },
+  ],
   bm: MOCK_SCENES_BM.map((s) => ({
     segment_id: s.scene_id,
     text: s.audio_script || "(tiada dialog)",
@@ -797,7 +802,7 @@ export const MOCK_CAPTIONS: Record<string, Array<{ segment_id: number; text: str
     { segment_id: 8, text: "（无对话）" },
     { segment_id: 9, text: "（无对话）" },
     { segment_id: 10, text: '退休者："我被骗了！"' },
-    { segment_id: 11, text: '退休者："喂，NSRC？我要举报一个骗局。我不会转任何钱。"' },
+    { segment_id: 11, text: '讲员："为避免此类情况，如果您接到有关可疑包裹的意外来电，请立即挂断电话。"' },
     { segment_id: 12, text: "讲员：\"千万不要将钱转入个人账户进行所谓的\u2018验证\u2019。\"" },
     { segment_id: 13, text: '讲员："请拨打NSRC热线997或前往最近的警察局核实任何索赔。"' },
   ],
@@ -812,7 +817,7 @@ export const MOCK_CAPTIONS: Record<string, Array<{ segment_id: number; text: str
     { segment_id: 8, text: "(உரையாடல் இல்லை)" },
     { segment_id: 9, text: "(உரையாடல் இல்லை)" },
     { segment_id: 10, text: 'ஓய்வுபெற்றவர்: "நான் மோசடிக்கு ஆளானேன்!"' },
-    { segment_id: 11, text: 'ஓய்வுபெற்றவர்: "ஹலோ, NSRC? நான் ஒரு மோசடியை புகாரளிக்க விரும்புகிறேன். நான் பணத்தை மாற்ற மாட்டேன்."' },
+    { segment_id: 11, text: 'பேச்சாளர்: "இதைத் தவிர்க்க, சந்தேகத்திற்கிடமான பார்சல் பற்றிய எதிர்பாராத அழைப்பைப் பெற்றால் உடனடியாக தொலைபேசியை வைக்கவும்."' },
     { segment_id: 12, text: 'பேச்சாளர்: "சரிபார்ப்பு என்ற பெயரில் தனிப்பட்ட கணக்குகளுக்கு பணத்தை ஒருபோதும் மாற்ற வேண்டாம்."' },
     { segment_id: 13, text: 'பேச்சாளர்: "NSRC ஐ 997 இல் தொடர்பு கொள்வதன் மூலம் அல்லது உங்கள் அருகிலுள்ள காவல் நிலையத்திற்குச் சென்று உரிமைகோரல்களை சரிபார்க்கவும்."' },
   ],
@@ -1046,9 +1051,25 @@ export const MOCK_VIDEO_CHAT_PRESETS: VideoChatPreset[] = [
       {
         scene_id: 11,
         visual_prompt:
-          "REDEMPTION SHOT \u2014 The Retiree, calmer now, picks up his phone and dials 997. Warm golden light gradually fills the room. Camera pulls back to a wide shot \u2014 he\u2019s not alone anymore, hope returns. Uplifting, informative style.",
+          "Close up of the Fake Pos Laju representative depicted as a featureless humanoid silhouette giving a lecture in a presentation room with a big screen showing parcel scam calls. Public service announcement style.",
         audio_script:
-          'Retiree (determined, steady): "Hello, NSRC? I want to report a scam. And I want to make sure no one else falls for this."',
+          'Narrator: "To avoid this, hang up immediately if you receive an unexpected call about suspicious parcels."',
+        duration_est_seconds: 8,
+      },
+      {
+        scene_id: 12,
+        visual_prompt:
+          "Close up of the Fake Bank Negara Malaysia representative depicted as a featureless humanoid silhouette giving a lecture in a presentation room with a big screen showing transferring money to suspicious account. Public service announcement style.",
+        audio_script:
+          'Narrator: "Never transfer money to personal accounts for verification."',
+        duration_est_seconds: 8,
+      },
+      {
+        scene_id: 13,
+        visual_prompt:
+          "Close up of the Fake senior police officer depicted as a featureless humanoid silhouette giving a lecture in a presentation room with a big screen showing fake police identity in parcel scam calls. Public service announcement style.",
+        audio_script:
+          'Narrator: "Verify claims by calling NSRC at 997 or visit a police station."',
         duration_est_seconds: 8,
       },
     ],
@@ -1058,13 +1079,20 @@ export const MOCK_VIDEO_CHAT_PRESETS: VideoChatPreset[] = [
     response:
       "Great suggestion! I\u2019ve preserved the original first 11 scenes and added two extra prevention scenes (12 and 13) at the end. Total scenes updated from 11 to 13.",
     updatedSceneBreakdown: [
-      ...MOCK_SCENES.map((s) => ({
+      ...MOCK_SCENES.slice(0, 10).map((s) => ({
         scene_id: s.scene_id,
         visual_prompt: s.visual_prompt,
         audio_script: s.audio_script,
         text_overlay: s.text_overlay,
         duration_est_seconds: s.duration_est_seconds,
       })),
+      {
+        scene_id: 11,
+        visual_prompt:
+          "Close up of the Fake Pos Laju representative depicted as a featureless humanoid silhouette giving a lecture in a presentation room with a big screen behind showing parcel scam calls. Visual style: Public service announcement.",
+        audio_script: 'Narrator: "To avoid this, hang up immediately if you receive an unexpected call about suspicious parcels."',
+        duration_est_seconds: 8,
+      },
       {
         scene_id: 12,
         visual_prompt:

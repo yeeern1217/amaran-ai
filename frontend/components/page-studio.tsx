@@ -74,7 +74,7 @@ export function PageStudio() {
   // Brief reveal loading when entering Studio (gives visual feedback before scripts appear)
   useEffect(() => {
     if (scenesGenerated && scenes.length > 0 && !isGeneratingAll) {
-      const timer = setTimeout(() => setIsRevealing(false), 1200)
+      const timer = setTimeout(() => setIsRevealing(false), 1000)
       return () => clearTimeout(timer)
     }
     if (!scenesGenerated) {
@@ -247,7 +247,7 @@ export function PageStudio() {
         updated[sceneIndex] = { ...updated[sceneIndex], generated: true }
         setScenes(updated)
         setGeneratingScene(null)
-      }, 9000)
+      }, 1000)
       return
     }
 
@@ -352,8 +352,8 @@ export function PageStudio() {
           },
         ])
         // Simulate safety re-review finishing after scene update
-        setTimeout(() => setSafetyReviewing(false), 5400)
-      }, 3600)
+        setTimeout(() => setSafetyReviewing(false), 1000)
+      }, 1000)
       return
     }
 
@@ -419,7 +419,7 @@ export function PageStudio() {
         // Re-run safety review after scenes change
         setSafetyReviewing(true)
         setSafetyExpanded(true)
-        setTimeout(() => setSafetyReviewing(false), 6000)
+        setTimeout(() => setSafetyReviewing(false), 1000)
       }
     } catch (err) {
       console.error("Chat error:", err)
